@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 using System.Reflection;
 using Microsoft.Office.Interop.Outlook;
+using Newtonsoft.Json;
 using Application = System.Windows.Forms.Application;
 using Word = Microsoft.Office.Interop.Word;
 using Outlook = Microsoft.Office.Interop.Outlook;
+using iTextSharp.text.pdf;
 
 namespace CaurixTemplateOperator
 {
@@ -21,9 +24,12 @@ namespace CaurixTemplateOperator
         internal static MySqlDataReader data;
         internal static string SQL = "select * from 'subscriber' LIMIT 0, 30";
         public static List<DbOutput> DbList = new List<DbOutput>();
-        internal static string WordTemplatePath = "Template.docx";
+        internal static object WordTemplatePath = Path.Combine(System.Windows.Forms.Application.StartupPath, "Template.docx");
         internal static string PathSaveTo;
         public static bool DisableLoadingPicturesFromEmail = CaurixTemplate.Default.DisableLoadingImagesFromEmail;
+
+        public static ReplaceDictionaryArray ReplaceDictionary =
+            JsonConvert.DeserializeObject<ReplaceDictionaryArray>(CaurixTemplate.Default.ReplacementJson);
 
         /// <summary>
         /// The main entry point for the application.
@@ -154,7 +160,8 @@ namespace CaurixTemplateOperator
             Outlook.Folder inboxFolder = null;
             foreach (Outlook.Folder sessionFolder in thisAccount.Session.Folders)
             {
-                if (sessionFolder.Name.Contains("inbox")) {inboxFolder = sessionFolder;
+                if (sessionFolder.Name.Contains("inbox")) {
+                    inboxFolder = sessionFolder;
                     break;
                 }
             }
@@ -190,7 +197,55 @@ namespace CaurixTemplateOperator
 
         public static void ExportFiles()
         {
+            
+            var WordApp = new Word.Application{Visible = false};
+            
 
+            foreach (var itemDbOutput in DbList)
+            {
+                Word.Document wdoc = WordApp.Documents.Open(ref WordTemplatePath, ReadOnly: false, Visible: false);
+                wdoc.Activate();
+
+
+                wdoc.ExportAsFixedFormat(PathSaveTo + "temp",Word.WdExportFormat.wdExportFormatPDF,false);
+                wdoc.Close(SaveChanges: false);
+                var finalpath = PathSaveTo + "export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" + itemDbOutput.Id;
+                InsertImagesIntoPDF(PathSaveTo + "temp",finalpath);
+            }
+        }
+
+        public static void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
+        {
+
+            using (Stream inputPdfStream = new FileStream(pdfInput, FileMode.Open, FileAccess.Read, FileShare.Read))
+            //using (Stream inputImageStream =   new FileStream("some_image.jpg", FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (Stream outputPdfStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                var reader = new PdfReader(inputPdfStream);
+                var stamper = new PdfStamper(reader, outputPdfStream);
+                var pdfContentByte = stamper.GetOverContent(1);
+
+                if (signature != null)
+                {
+                    iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(signature, color:null);
+                    image.SetAbsolutePosition(159, 753);
+                    image.ScaleToFit(120f, 250f);
+                    pdfContentByte.AddImage(image);
+                    //159,733    //120px horiz * 250px vert  345,662.5  168px * 250px
+                         
+                }
+
+                if (identif != null)
+                {
+                    iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(identif, color: null);
+                    image.SetAbsolutePosition(345, 663);
+                    image.ScaleToFit(168f,250f);
+                    pdfContentByte.AddImage(image);
+                }
+                
+                stamper.Close();
+            }
+            
         }
 
 
@@ -219,6 +274,12 @@ namespace CaurixTemplateOperator
         public string Ville { get; set; }
         public string Place_of_Birth { get; set; }
         public string email { get; set; }
+
+        public string[] GetListOfStrings()
+        {
+            return new[] {"Id","Source","Gender","Prenom","Nom","MSIDN","NationalIDN", "Date_Naissance", "adresse", "Quartier", "Ville", "Place_of_Birth", "email" };
+        }
+
     }
 
     [Serializable]
@@ -230,6 +291,18 @@ namespace CaurixTemplateOperator
 
     public class ReplaceDictionaryArray {
         public ReplaceDictionaryElement[] elem { get; set; }
+
+        public int GetIndexByKeyName(string key)
+        {
+            int c = -1;
+            foreach (var e in elem)
+            {
+                c++;
+                if (e.key == key) { break;}
+            }
+
+            return c;
+        }
     }
 }
 

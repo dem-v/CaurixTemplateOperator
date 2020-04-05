@@ -69,7 +69,10 @@ namespace CaurixTemplateOperator
 
         private void ReplacementDictionaryText_DoubleClick(object sender, EventArgs e)
         {
-
+            using (var f = new ReplacementDictionaryEdit())
+            {
+                f.Show();
+            }
         }
     }
 }
