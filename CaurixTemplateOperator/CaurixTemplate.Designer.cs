@@ -142,5 +142,29 @@ namespace CaurixTemplateOperator {
                 this["IdsToSkip"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DisableLoadingImagesFromEmail {
+            get {
+                return ((bool)(this["DisableLoadingImagesFromEmail"]));
+            }
+            set {
+                this["DisableLoadingImagesFromEmail"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ReplacementJson {
+            get {
+                return ((string)(this["ReplacementJson"]));
+            }
+            set {
+                this["ReplacementJson"] = value;
+            }
+        }
     }
 }

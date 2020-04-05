@@ -52,6 +52,9 @@
             this.SaveBtn = new System.Windows.Forms.Button();
             this.CancelBtn = new System.Windows.Forms.Button();
             this.EmailFromCBox = new System.Windows.Forms.ComboBox();
+            this.DisableLoadingImagesCheckBox = new System.Windows.Forms.CheckBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.ReplacementDictionaryText = new System.Windows.Forms.TextBox();
             this.flowLayoutPanel1.SuspendLayout();
             this.flowLayoutPanel2.SuspendLayout();
             this.SuspendLayout();
@@ -70,6 +73,7 @@
             this.flowLayoutPanel1.Controls.Add(this.PasswordText);
             this.flowLayoutPanel1.Controls.Add(this.label6);
             this.flowLayoutPanel1.Controls.Add(this.EmailFromCBox);
+            this.flowLayoutPanel1.Controls.Add(this.DisableLoadingImagesCheckBox);
             this.flowLayoutPanel1.Controls.Add(this.label7);
             this.flowLayoutPanel1.Controls.Add(this.EmailToDefaultText);
             this.flowLayoutPanel1.Controls.Add(this.label8);
@@ -78,10 +82,12 @@
             this.flowLayoutPanel1.Controls.Add(this.TimeDeferEmailText);
             this.flowLayoutPanel1.Controls.Add(this.label10);
             this.flowLayoutPanel1.Controls.Add(this.ListOfIdsToSkipText);
+            this.flowLayoutPanel1.Controls.Add(this.label11);
+            this.flowLayoutPanel1.Controls.Add(this.ReplacementDictionaryText);
             this.flowLayoutPanel1.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 12);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(414, 397);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(414, 491);
             this.flowLayoutPanel1.TabIndex = 0;
             // 
             // label1
@@ -217,7 +223,7 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label7.AutoSize = true;
             this.label7.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label7.Location = new System.Drawing.Point(3, 208);
+            this.label7.Location = new System.Drawing.Point(3, 239);
             this.label7.MinimumSize = new System.Drawing.Size(192, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(192, 35);
@@ -228,7 +234,7 @@
             // EmailToDefaultText
             // 
             this.EmailToDefaultText.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.EmailToDefaultText.Location = new System.Drawing.Point(201, 211);
+            this.EmailToDefaultText.Location = new System.Drawing.Point(201, 242);
             this.EmailToDefaultText.Name = "EmailToDefaultText";
             this.EmailToDefaultText.Size = new System.Drawing.Size(191, 29);
             this.EmailToDefaultText.TabIndex = 13;
@@ -239,7 +245,7 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label8.Location = new System.Drawing.Point(3, 243);
+            this.label8.Location = new System.Drawing.Point(3, 274);
             this.label8.MinimumSize = new System.Drawing.Size(192, 0);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(192, 35);
@@ -250,7 +256,7 @@
             // TimeToRerunText
             // 
             this.TimeToRerunText.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.TimeToRerunText.Location = new System.Drawing.Point(201, 246);
+            this.TimeToRerunText.Location = new System.Drawing.Point(201, 277);
             this.TimeToRerunText.Name = "TimeToRerunText";
             this.TimeToRerunText.Size = new System.Drawing.Size(191, 29);
             this.TimeToRerunText.TabIndex = 15;
@@ -261,7 +267,7 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label9.Location = new System.Drawing.Point(3, 278);
+            this.label9.Location = new System.Drawing.Point(3, 309);
             this.label9.MinimumSize = new System.Drawing.Size(192, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(192, 35);
@@ -272,7 +278,7 @@
             // TimeDeferEmailText
             // 
             this.TimeDeferEmailText.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.TimeDeferEmailText.Location = new System.Drawing.Point(201, 281);
+            this.TimeDeferEmailText.Location = new System.Drawing.Point(201, 312);
             this.TimeDeferEmailText.Name = "TimeDeferEmailText";
             this.TimeDeferEmailText.Size = new System.Drawing.Size(191, 29);
             this.TimeDeferEmailText.TabIndex = 17;
@@ -283,7 +289,7 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label10.AutoSize = true;
             this.label10.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label10.Location = new System.Drawing.Point(3, 313);
+            this.label10.Location = new System.Drawing.Point(3, 344);
             this.label10.MinimumSize = new System.Drawing.Size(192, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(192, 75);
@@ -294,7 +300,7 @@
             // ListOfIdsToSkipText
             // 
             this.ListOfIdsToSkipText.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.ListOfIdsToSkipText.Location = new System.Drawing.Point(201, 316);
+            this.ListOfIdsToSkipText.Location = new System.Drawing.Point(201, 347);
             this.ListOfIdsToSkipText.Multiline = true;
             this.ListOfIdsToSkipText.Name = "ListOfIdsToSkipText";
             this.ListOfIdsToSkipText.Size = new System.Drawing.Size(191, 69);
@@ -304,7 +310,7 @@
             // 
             this.flowLayoutPanel2.Controls.Add(this.SaveBtn);
             this.flowLayoutPanel2.Controls.Add(this.CancelBtn);
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(12, 415);
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(12, 506);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
             this.flowLayoutPanel2.Size = new System.Drawing.Size(414, 54);
             this.flowLayoutPanel2.TabIndex = 1;
@@ -339,11 +345,48 @@
             this.EmailFromCBox.Size = new System.Drawing.Size(191, 29);
             this.EmailFromCBox.TabIndex = 20;
             // 
+            // DisableLoadingImagesCheckBox
+            // 
+            this.DisableLoadingImagesCheckBox.AutoSize = true;
+            this.DisableLoadingImagesCheckBox.Location = new System.Drawing.Point(3, 211);
+            this.DisableLoadingImagesCheckBox.MinimumSize = new System.Drawing.Size(400, 0);
+            this.DisableLoadingImagesCheckBox.Name = "DisableLoadingImagesCheckBox";
+            this.DisableLoadingImagesCheckBox.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.DisableLoadingImagesCheckBox.Size = new System.Drawing.Size(400, 25);
+            this.DisableLoadingImagesCheckBox.TabIndex = 21;
+            this.DisableLoadingImagesCheckBox.Text = "Disable Loading Singature From Email";
+            this.DisableLoadingImagesCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // label11
+            // 
+            this.label11.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.label11.AutoSize = true;
+            this.label11.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label11.Location = new System.Drawing.Point(3, 419);
+            this.label11.MinimumSize = new System.Drawing.Size(192, 0);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(348, 21);
+            this.label11.TabIndex = 22;
+            this.label11.Text = "Replacement dictionary (Double click to edit)";
+            this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // ReplacementDictionaryText
+            // 
+            this.ReplacementDictionaryText.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.ReplacementDictionaryText.Location = new System.Drawing.Point(3, 443);
+            this.ReplacementDictionaryText.Multiline = true;
+            this.ReplacementDictionaryText.Name = "ReplacementDictionaryText";
+            this.ReplacementDictionaryText.ReadOnly = true;
+            this.ReplacementDictionaryText.Size = new System.Drawing.Size(389, 45);
+            this.ReplacementDictionaryText.TabIndex = 23;
+            this.ReplacementDictionaryText.DoubleClick += new System.EventHandler(this.ReplacementDictionaryText_DoubleClick);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(443, 477);
+            this.ClientSize = new System.Drawing.Size(445, 563);
             this.Controls.Add(this.flowLayoutPanel2);
             this.Controls.Add(this.flowLayoutPanel1);
             this.Name = "SettingsForm";
@@ -381,5 +424,8 @@
         private System.Windows.Forms.Button SaveBtn;
         private System.Windows.Forms.Button CancelBtn;
         private System.Windows.Forms.ComboBox EmailFromCBox;
+        private System.Windows.Forms.CheckBox DisableLoadingImagesCheckBox;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TextBox ReplacementDictionaryText;
     }
 }

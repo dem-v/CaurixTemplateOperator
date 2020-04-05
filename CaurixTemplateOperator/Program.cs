@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 using System.Reflection;
+using Microsoft.Office.Interop.Outlook;
+using Application = System.Windows.Forms.Application;
+using Word = Microsoft.Office.Interop.Word;
+using Outlook = Microsoft.Office.Interop.Outlook;
 
 namespace CaurixTemplateOperator
 {
@@ -16,6 +21,9 @@ namespace CaurixTemplateOperator
         internal static MySqlDataReader data;
         internal static string SQL = "select * from 'subscriber' LIMIT 0, 30";
         public static List<DbOutput> DbList = new List<DbOutput>();
+        internal static string WordTemplatePath = "Template.docx";
+        internal static string PathSaveTo;
+        public static bool DisableLoadingPicturesFromEmail = CaurixTemplate.Default.DisableLoadingImagesFromEmail;
 
         /// <summary>
         /// The main entry point for the application.
@@ -34,7 +42,7 @@ namespace CaurixTemplateOperator
             {
                 MysqlConn = new MySqlConnection
                 {
-                    ConnectionString = "Server=87.106.252.108; Port=3306; User ID=admin_doubles; Password=1programming1; Database=admin_doubles_tennisexplorer;" //TODO: change parameters in conn string
+                    ConnectionString = "Server=" + CaurixTemplate.Default.ServerAddress + "; Port=" + CaurixTemplate.Default.Port + "; User ID=" + CaurixTemplate.Default.UserID + "; Password=" + CaurixTemplate.Default.Password + "; Database=" + CaurixTemplate.Default.DatabaseName + ";" 
                 };
                 MysqlConn.Open();
                 Command.CommandText = SQL;
@@ -62,6 +70,8 @@ namespace CaurixTemplateOperator
                     };
                     DbList.Add(item);
                 }
+
+                MysqlConn.Close();
             }
             catch (MySqlException ex)
             {
@@ -84,6 +94,98 @@ namespace CaurixTemplateOperator
                 }
             }*/
 
+        }
+
+        public static dynamic LoadImageFromEmail(string number, string nameKey)
+        {
+            var OutlookApp = new Outlook.Application();
+            Outlook.Account thisAccount = null;
+            
+            Retry:
+
+            if (DisableLoadingPicturesFromEmail == true) return 0;
+
+            foreach (Outlook.Account a in OutlookApp.Session.Accounts)
+                if (a.DisplayName == CaurixTemplate.Default.EmailSender)
+                {
+                    thisAccount = a;
+                    break;
+                }
+
+            if (thisAccount == null)
+            {
+                var result = MessageBox.Show(
+                    "There is no such account '" + CaurixTemplate.Default.EmailSender +
+                    "' registered in current outlook client. Would you like to skip? (Clicking No will call settings)",
+                    "Error in email account. Skip?", MessageBoxButtons.YesNoCancel);
+                if (result == DialogResult.No)
+                {
+                    try
+                    {
+                        new SettingsForm();
+                        goto Retry;
+                    }
+                    catch (System.Exception e)
+                    {
+                        var res = MessageBox.Show(
+                            "Running settings form was unsuccessful and cause error " + e.Message +
+                            "\n\rWould you like to continue without loading pictures?", "Error",
+                            MessageBoxButtons.YesNo);
+                        switch (res)
+                        {
+                            case DialogResult.Yes:
+                                DisableLoadingPicturesFromEmail = true;
+                                return 0;
+                            case DialogResult.No:
+                                Environment.Exit(-1);
+                                break;
+                            default:
+                                return 0;
+                        }
+                    }
+                    
+                }
+                else if (result==DialogResult.Cancel)
+                {
+                    Environment.Exit(-1);
+                }
+            }
+
+            Outlook.Folder inboxFolder = null;
+            foreach (Outlook.Folder sessionFolder in thisAccount.Session.Folders)
+            {
+                if (sessionFolder.Name.Contains("inbox")) {inboxFolder = sessionFolder;
+                    break;
+                }
+            }
+
+            if (inboxFolder == null) return 0;
+            var criteria = "@SQL=\"urn:schemas:httpmail:subject\" like '%" + number + "%'";
+            if (inboxFolder.Items.Restrict(criteria).Count == 0) return 0;
+
+            //List<Outlook.MailItem> mailItems = new List<MailItem>();
+            MailItem thisMailItem = null;
+            foreach (MailItem m in inboxFolder.Items.Restrict(criteria))
+            {
+                if (m.Class == OlObjectClass.olMail)
+                    if (m.Attachments.Count != 0)
+                    { thisMailItem = m;
+                        break;
+                    }
+
+            }
+
+            if (thisMailItem == null) return 0;
+            foreach (Attachment a in thisMailItem.Attachments)
+            {
+                if (a.FileName.Contains(nameKey))
+                {
+                    a.SaveAsFile(PathSaveTo + @"\" + number + nameKey);
+                    return Image.FromFile(PathSaveTo + @"\" + number + nameKey);
+                }
+            }
+            
+            return 0;
         }
 
         public static void ExportFiles()
@@ -117,6 +219,17 @@ namespace CaurixTemplateOperator
         public string Ville { get; set; }
         public string Place_of_Birth { get; set; }
         public string email { get; set; }
+    }
+
+    [Serializable]
+    public class ReplaceDictionaryElement
+    {
+        public string key { get; set; }
+        public string value { get; set; }
+    }
+
+    public class ReplaceDictionaryArray {
+        public ReplaceDictionaryElement[] elem { get; set; }
     }
 }
 

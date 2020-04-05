@@ -34,6 +34,7 @@ namespace CaurixTemplateOperator
             TimeToRerunText.Text = CaurixTemplate.Default.TimeToRestart.ToString();
             TimeDeferEmailText.Text = CaurixTemplate.Default.TimeToDeferEmail.ToString();
             ListOfIdsToSkipText.Text = CaurixTemplate.Default.IdsToSkip;
+            DisableLoadingImagesCheckBox.Checked = CaurixTemplate.Default.DisableLoadingImagesFromEmail;
         }
 
         private void SaveBtn_Click(object sender, EventArgs e)
@@ -50,12 +51,13 @@ namespace CaurixTemplateOperator
                 CaurixTemplate.Default.TimeToRestart = ulong.Parse(TimeToRerunText.Text);
                 CaurixTemplate.Default.TimeToDeferEmail = ulong.Parse(TimeDeferEmailText.Text);
                 CaurixTemplate.Default.IdsToSkip = ListOfIdsToSkipText.Text;
+                CaurixTemplate.Default.DisableLoadingImagesFromEmail = DisableLoadingImagesCheckBox.Checked;
                 CaurixTemplate.Default.Save();
                 Close();
             }
             catch (Exception exception)
             {
-                MessageBox.Show("Some data you entered is wrong. Please, recheck your input and try again.\n\rException occured is as follows: " + exception.Message + " at " + exception.Source);
+                MessageBox.Show("Some data you entered may be wrong. Please, recheck your input and try again.\n\rException occured is as follows: " + exception.Message + " at " + exception.Source);
             }
         }
 
@@ -63,6 +65,11 @@ namespace CaurixTemplateOperator
         {
             CaurixTemplate.Default.Reload();
             Close();
+        }
+
+        private void ReplacementDictionaryText_DoubleClick(object sender, EventArgs e)
+        {
+
         }
     }
 }
