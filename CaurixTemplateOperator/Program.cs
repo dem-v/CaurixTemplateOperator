@@ -18,5 +18,12 @@ namespace CaurixTemplateOperator
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
         }
+
+        /// Require a CP interface, logging, files to store settings?, settings window
+        /// getDBtable
+        /// parse response into an array
+        /// fill templates
+        /// email?
+        /// start service to rerun under time
     }
 }
