@@ -199,13 +199,30 @@ namespace CaurixTemplateOperator
         {
             
             var WordApp = new Word.Application{Visible = false};
-            
 
             foreach (var itemDbOutput in DbList)
             {
                 Word.Document wdoc = WordApp.Documents.Open(ref WordTemplatePath, ReadOnly: false, Visible: false);
                 wdoc.Activate();
 
+                var dbstr = itemDbOutput.ConvertToStrings();
+                int cnt = -1;
+                foreach (var s in itemDbOutput.GetListOfStrings())
+                {
+                    cnt++;
+                    int k = ReplaceDictionary.GetIndexByKeyName(s);
+                    if (k > -1)
+                    {
+                        Word.Find findObject = WordApp.Selection.Find;
+                        findObject.ClearFormatting();
+                        findObject.Text = ReplaceDictionary.elem[k].value;
+                        findObject.Replacement.ClearFormatting();
+                        findObject.Replacement.Text = dbstr[cnt];
+
+                        object replaceAll = Word.WdReplace.wdReplaceAll;
+                        findObject.Execute();
+                    }
+                }
 
                 wdoc.ExportAsFixedFormat(PathSaveTo + "temp",Word.WdExportFormat.wdExportFormatPDF,false);
                 wdoc.Close(SaveChanges: false);
@@ -278,6 +295,15 @@ namespace CaurixTemplateOperator
         public string[] GetListOfStrings()
         {
             return new[] {"Id","Source","Gender","Prenom","Nom","MSIDN","NationalIDN", "Date_Naissance", "adresse", "Quartier", "Ville", "Place_of_Birth", "email" };
+        }
+
+        public string[] ConvertToStrings()
+        {
+            return new[]
+            {
+                Id.ToString(), Source, Gender, Prenom, Nom, MSIDN, NationalIDN,
+                Date_Naissance.Value.ToString("dd\\MM\\yyyy"), adresse, Quartier, Ville, Place_of_Birth, email
+            };
         }
 
     }
