@@ -30,13 +30,14 @@
         {
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            this.addNewColumnBtn = new System.Windows.Forms.Button();
-            this.DeleteColumnBtn = new System.Windows.Forms.Button();
-            this.SaveDataBtn = new System.Windows.Forms.Button();
             this.newColName = new System.Windows.Forms.TextBox();
-            this.CancelChangesBtn = new System.Windows.Forms.Button();
+            this.addNewColumnBtn = new System.Windows.Forms.Button();
             this.ColumnListComboBox = new System.Windows.Forms.ComboBox();
+            this.DeleteColumnBtn = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.SaveDataBtn = new System.Windows.Forms.Button();
+            this.CancelChangesBtn = new System.Windows.Forms.Button();
+            this.AddRowBtn = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -60,12 +61,21 @@
             this.flowLayoutPanel1.Controls.Add(this.ColumnListComboBox);
             this.flowLayoutPanel1.Controls.Add(this.DeleteColumnBtn);
             this.flowLayoutPanel1.Controls.Add(this.label1);
+            this.flowLayoutPanel1.Controls.Add(this.AddRowBtn);
             this.flowLayoutPanel1.Controls.Add(this.SaveDataBtn);
             this.flowLayoutPanel1.Controls.Add(this.CancelChangesBtn);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 380);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.flowLayoutPanel1.Size = new System.Drawing.Size(773, 67);
             this.flowLayoutPanel1.TabIndex = 1;
+            // 
+            // newColName
+            // 
+            this.newColName.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.newColName.Location = new System.Drawing.Point(3, 3);
+            this.newColName.Name = "newColName";
+            this.newColName.Size = new System.Drawing.Size(181, 26);
+            this.newColName.TabIndex = 3;
             // 
             // addNewColumnBtn
             // 
@@ -78,6 +88,16 @@
             this.addNewColumnBtn.UseVisualStyleBackColor = true;
             this.addNewColumnBtn.Click += new System.EventHandler(this.addNewColumnBtn_Click);
             // 
+            // ColumnListComboBox
+            // 
+            this.ColumnListComboBox.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.ColumnListComboBox.FormattingEnabled = true;
+            this.ColumnListComboBox.Location = new System.Drawing.Point(342, 3);
+            this.ColumnListComboBox.Name = "ColumnListComboBox";
+            this.ColumnListComboBox.Size = new System.Drawing.Size(229, 27);
+            this.ColumnListComboBox.TabIndex = 6;
+            this.ColumnListComboBox.Click += new System.EventHandler(this.ColumnListComboBox_Click);
+            // 
             // DeleteColumnBtn
             // 
             this.DeleteColumnBtn.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
@@ -89,10 +109,19 @@
             this.DeleteColumnBtn.UseVisualStyleBackColor = true;
             this.DeleteColumnBtn.Click += new System.EventHandler(this.DeleteColumnBtn_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(3, 33);
+            this.label1.MinimumSize = new System.Drawing.Size(205, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(205, 13);
+            this.label1.TabIndex = 7;
+            // 
             // SaveDataBtn
             // 
             this.SaveDataBtn.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.SaveDataBtn.Location = new System.Drawing.Point(402, 36);
+            this.SaveDataBtn.Location = new System.Drawing.Point(401, 36);
             this.SaveDataBtn.Name = "SaveDataBtn";
             this.SaveDataBtn.Size = new System.Drawing.Size(181, 26);
             this.SaveDataBtn.TabIndex = 2;
@@ -100,18 +129,10 @@
             this.SaveDataBtn.UseVisualStyleBackColor = true;
             this.SaveDataBtn.Click += new System.EventHandler(this.SaveDataBtn_Click);
             // 
-            // newColName
-            // 
-            this.newColName.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.newColName.Location = new System.Drawing.Point(3, 3);
-            this.newColName.Name = "newColName";
-            this.newColName.Size = new System.Drawing.Size(181, 26);
-            this.newColName.TabIndex = 3;
-            // 
             // CancelChangesBtn
             // 
             this.CancelChangesBtn.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.CancelChangesBtn.Location = new System.Drawing.Point(589, 36);
+            this.CancelChangesBtn.Location = new System.Drawing.Point(588, 36);
             this.CancelChangesBtn.Name = "CancelChangesBtn";
             this.CancelChangesBtn.Size = new System.Drawing.Size(177, 27);
             this.CancelChangesBtn.TabIndex = 5;
@@ -119,24 +140,17 @@
             this.CancelChangesBtn.UseVisualStyleBackColor = true;
             this.CancelChangesBtn.Click += new System.EventHandler(this.CancelChangesBtn_Click);
             // 
-            // ColumnListComboBox
+            // AddRowBtn
             // 
-            this.ColumnListComboBox.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.ColumnListComboBox.FormattingEnabled = true;
-            this.ColumnListComboBox.Location = new System.Drawing.Point(342, 3);
-            this.ColumnListComboBox.Name = "ColumnListComboBox";
-            this.ColumnListComboBox.Size = new System.Drawing.Size(229, 27);
-            this.ColumnListComboBox.TabIndex = 6;
-            this.ColumnListComboBox.Click += new System.EventHandler(this.ColumnListComboBox_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 33);
-            this.label1.MinimumSize = new System.Drawing.Size(393, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(393, 13);
-            this.label1.TabIndex = 7;
+            this.AddRowBtn.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.AddRowBtn.Location = new System.Drawing.Point(214, 36);
+            this.AddRowBtn.MinimumSize = new System.Drawing.Size(181, 26);
+            this.AddRowBtn.Name = "AddRowBtn";
+            this.AddRowBtn.Size = new System.Drawing.Size(181, 26);
+            this.AddRowBtn.TabIndex = 8;
+            this.AddRowBtn.Text = "Add Row for Records";
+            this.AddRowBtn.UseVisualStyleBackColor = true;
+            this.AddRowBtn.Click += new System.EventHandler(this.AddRowBtn_Click);
             // 
             // ReplacementDictionaryEdit
             // 
@@ -165,5 +179,6 @@
         private System.Windows.Forms.ComboBox ColumnListComboBox;
         private System.Windows.Forms.Button CancelChangesBtn;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button AddRowBtn;
     }
 }

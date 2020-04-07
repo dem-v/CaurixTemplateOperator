@@ -16,7 +16,7 @@ using iTextSharp.text.pdf;
 
 namespace CaurixTemplateOperator
 {
-    static class Program
+     static class Program
     {
         internal static MySqlConnection MysqlConn;
         internal static MySqlCommand Command = new MySqlCommand();
@@ -30,16 +30,23 @@ namespace CaurixTemplateOperator
 
         public static ReplaceDictionaryArray ReplaceDictionary =
             JsonConvert.DeserializeObject<ReplaceDictionaryArray>(CaurixTemplate.Default.ReplacementJson);
+        internal static Form1 fff;
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        [STAThread]
+        //[STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(fff = new Form1());
+        }
+
+        public static void OrganizerStart()
+        {
+            ConnectDb();
+            ExportFiles();
         }
 
         public static void ConnectDb()
@@ -220,7 +227,7 @@ namespace CaurixTemplateOperator
                         findObject.Replacement.Text = dbstr[cnt];
 
                         object replaceAll = Word.WdReplace.wdReplaceAll;
-                        findObject.Execute();
+                        findObject.Execute(Replace: ref replaceAll);
                     }
                 }
 
@@ -316,7 +323,12 @@ namespace CaurixTemplateOperator
     }
 
     public class ReplaceDictionaryArray {
-        public ReplaceDictionaryElement[] elem { get; set; }
+        public List<ReplaceDictionaryElement> elem { get; set; }
+
+        public ReplaceDictionaryArray()
+        {
+            elem = new List<ReplaceDictionaryElement>();
+        }
 
         public int GetIndexByKeyName(string key)
         {

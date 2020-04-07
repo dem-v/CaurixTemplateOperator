@@ -166,5 +166,17 @@ namespace CaurixTemplateOperator {
                 this["ReplacementJson"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string PathSaveTo {
+            get {
+                return ((string)(this["PathSaveTo"]));
+            }
+            set {
+                this["PathSaveTo"] = value;
+            }
+        }
     }
 }

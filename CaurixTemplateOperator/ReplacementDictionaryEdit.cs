@@ -63,7 +63,17 @@ namespace CaurixTemplateOperator
 
         private void SaveDataBtn_Click(object sender, EventArgs e)
         {
-            CaurixTemplate.Default.ReplacementJson = JsonConvert.SerializeObject(dataGridView1.DataSource);
+            var obj = new ReplaceDictionaryArray();
+            foreach (DataGridViewColumn col in dataGridView1.Columns)
+            {
+                ReplaceDictionaryElement element = new ReplaceDictionaryElement
+                {
+                    key = col.HeaderText,
+                    value = dataGridView1[col.Name, 0].Value.ToString()
+                };
+                obj.elem.Add(element);
+            }
+            CaurixTemplate.Default.ReplacementJson = JsonConvert.SerializeObject(obj);
             CaurixTemplate.Default.Save();
             Close();
         }
@@ -71,6 +81,11 @@ namespace CaurixTemplateOperator
         private void CancelChangesBtn_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void AddRowBtn_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.RowCount == 0 && dataGridView1.Columns.Count>0) dataGridView1.Rows.Add();
         }
     }
 }

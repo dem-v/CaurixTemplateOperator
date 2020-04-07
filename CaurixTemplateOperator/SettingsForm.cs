@@ -7,7 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Outlook = Microsoft.Office.Interop.Outlook;
+//using Outlook = Microsoft.Office.Interop.Outlook;
+using Outlook = NetOffice.OutlookApi;
 
 namespace CaurixTemplateOperator
 {
@@ -22,8 +23,9 @@ namespace CaurixTemplateOperator
             UserIdText.Text = CaurixTemplate.Default.UserID;
             PasswordText.Text = CaurixTemplate.Default.Password;
             EmailFromCBox.Text = CaurixTemplate.Default.EmailSender;
-            var OApp = new Outlook.Application();
+            var OApp = new Outlook.Application(); //TODO: Apply a new SMTP/IMAP nagivation system to substitute Outlook!!!!
             var accounts = OApp.Session.Accounts;
+            
             foreach (Outlook.Account account in accounts)
             {
                 EmailFromCBox.Items.Add(account.DisplayName);
@@ -35,6 +37,7 @@ namespace CaurixTemplateOperator
             TimeDeferEmailText.Text = CaurixTemplate.Default.TimeToDeferEmail.ToString();
             ListOfIdsToSkipText.Text = CaurixTemplate.Default.IdsToSkip;
             DisableLoadingImagesCheckBox.Checked = CaurixTemplate.Default.DisableLoadingImagesFromEmail;
+            Show();
         }
 
         private void SaveBtn_Click(object sender, EventArgs e)
@@ -69,10 +72,8 @@ namespace CaurixTemplateOperator
 
         private void ReplacementDictionaryText_DoubleClick(object sender, EventArgs e)
         {
-            using (var f = new ReplacementDictionaryEdit())
-            {
-                f.Show();
-            }
+            var f = new ReplacementDictionaryEdit();
+            f.Show();
         }
     }
 }

@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaurixTemplateOperator", "CaurixTemplateOperator\CaurixTemplateOperator.csproj", "{3FED9D81-526A-442D-992D-3F23E8AC619F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaurixTemplateOperator.Tests", "CaurixTemplateOperator.Tests\CaurixTemplateOperator.Tests.csproj", "{2ACCBCD8-31C7-4C88-BBEC-C00E31AA3012}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{3FED9D81-526A-442D-992D-3F23E8AC619F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FED9D81-526A-442D-992D-3F23E8AC619F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FED9D81-526A-442D-992D-3F23E8AC619F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ACCBCD8-31C7-4C88-BBEC-C00E31AA3012}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ACCBCD8-31C7-4C88-BBEC-C00E31AA3012}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ACCBCD8-31C7-4C88-BBEC-C00E31AA3012}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ACCBCD8-31C7-4C88-BBEC-C00E31AA3012}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
