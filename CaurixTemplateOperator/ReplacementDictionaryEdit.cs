@@ -18,7 +18,20 @@ namespace CaurixTemplateOperator
         {
             InitializeComponent();
             var jsonObj = JsonConvert.DeserializeObject<ReplaceDictionaryArray>(CaurixTemplate.Default.ReplacementJson);
-            dataGridView1.DataSource = jsonObj;
+            foreach (ReplaceDictionaryElement elem in jsonObj.elem)
+            {
+                dataGridView1.Columns.Add(elem.key, elem.key);
+                if (dataGridView1.RowCount > 0)
+                {
+                    dataGridView1[elem.key, 0].Value = elem.value;
+                }
+                else if (dataGridView1.RowCount == 0)
+                {
+                    dataGridView1.Rows.Add();
+                    dataGridView1[elem.key, 0].Value = elem.value;
+                }
+            }
+            //dataGridView1.DataSource = jsonObj;
         }
 
         private void addNewColumnBtn_Click(object sender, EventArgs e)

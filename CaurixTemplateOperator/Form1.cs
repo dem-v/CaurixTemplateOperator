@@ -14,13 +14,33 @@ namespace CaurixTemplateOperator
     public partial class Form1 : Form
     {
         public bool IsRunning = false;
-        internal Thread thread;
-        internal Thread invokerThread;
+        //internal Thread thread;
+        //internal Thread invokerThread;
+        private BackgroundWorker backgroundWorker;
+        private BackgroundWorker schedulerWorker;
+
         ///public string PathSaveTo = String.Empty;
 
         public Form1()
         {
             InitializeComponent();
+
+            schedulerWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
+            schedulerWorker.DoWork += delegate (object sender, DoWorkEventArgs args) {
+                StartScheduler();
+                return;
+            };
+
+            backgroundWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
+            backgroundWorker.DoWork += delegate (object sender, DoWorkEventArgs args) {
+                while (DateTime.Now < (DateTime) args.Argument)
+                {
+                    Thread.Sleep(1000);
+                }
+                backgroundWorker.ReportProgress(100);
+                return;
+            };
+            backgroundWorker.ProgressChanged += delegate { schedulerWorker.RunWorkerAsync(); };
         }
 
 
@@ -53,12 +73,7 @@ namespace CaurixTemplateOperator
 
         public void InvokerRunner(DateTime nextTime)
         {
-            while (DateTime.Now < nextTime)
-            {
-                Thread.Sleep(1000);
-            }
-
-            StartScheduler();
+            backgroundWorker.RunWorkerAsync(nextTime);
 //            Thread.CurrentThread.Abort();
             return;
         }
@@ -68,11 +83,13 @@ namespace CaurixTemplateOperator
             try
             {
                 Program.PathSaveTo = PathSaveToText.Text;
-                if (thread != null)  thread.Join(5000);
-                thread = new Thread((() => Program.OrganizerStart())){/*IsBackground = true,*/Name = "MainThread"};
-                if (thread.IsAlive) IsRunning = true;
+                //if (thread != null)  thread.Join(5000);
+                //thread = new Thread((() => Program.OrganizerStart())){IsBackground = true,Name = "MainThread"};
                 StopBtn.Enabled = true;
                 StartBtn.Enabled = false;
+                Program.OrganizerStart();
+                //if (thread.IsAlive) IsRunning = true;
+                
 
             }
             catch (Exception ex)
@@ -87,16 +104,18 @@ namespace CaurixTemplateOperator
             var NextTime = StartTime.AddSeconds((double) CaurixTemplate.Default.TimeToRestart);
             StatusLbl.Text = NextTime.ToString("U");
 
-            if (invokerThread!=null) invokerThread.Join(5000);
-            invokerThread = new Thread((() => InvokerRunner(NextTime))){/*IsBackground = true,*/Name = "Invoker"};
+            //if (invokerThread!=null) invokerThread.Join(5000);
+            //invokerThread = new Thread((() => InvokerRunner(NextTime))){IsBackground = true,Name = "Invoker"};
+            InvokerRunner(NextTime);
         }   
 
         public void StopScheduler()
         {
-            invokerThread.Abort();
-            thread.Join(5000);
-            thread.Abort();
-            StatusLbl.Text = "not schedued";
+            //invokerThread.Abort();
+            //thread.Join(5000);
+            //thread.Abort();
+            StatusLbl.Text = "not scheduled";
+            Environment.Exit(0);
         }
 
         private void StopBtn_Click(object sender, EventArgs e)
@@ -106,8 +125,9 @@ namespace CaurixTemplateOperator
 
         private void StartBtn_Click(object sender, EventArgs e)
         {
-            InvokerRunner(DateTime.Now);
+            //InvokerRunner(DateTime.Now);
             //invokerThread = new Thread((() => InvokerRunner(DateTime.Now))) {IsBackground = true,Name = "invokerunnerthread"};
+            InvokerRunner(DateTime.Now);
         }
     }
 }

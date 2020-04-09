@@ -5,7 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using MySql.Data.MySqlClient;
+//using MySql.Data.MySqlClient;
+using System.Data.Odbc;
 using System.Reflection;
 using Microsoft.Office.Interop.Outlook;
 using Newtonsoft.Json;
@@ -18,11 +19,11 @@ namespace CaurixTemplateOperator
 {
      static class Program
     {
-        internal static MySqlConnection MysqlConn;
-        internal static MySqlCommand Command = new MySqlCommand();
-        internal static MySqlDataAdapter Adapter = new MySqlDataAdapter();
-        internal static MySqlDataReader data;
-        internal static string SQL = "select * from 'subscriber' LIMIT 0, 30";
+        internal static OdbcConnection OdbcConn;
+        internal static OdbcCommand Command = new OdbcCommand();
+        internal static OdbcDataAdapter Adapter = new OdbcDataAdapter();
+        internal static OdbcDataReader data;
+        internal static string SQL = "select * from subscriber LIMIT 0, 30";
         public static List<DbOutput> DbList = new List<DbOutput>();
         internal static object WordTemplatePath = Path.Combine(System.Windows.Forms.Application.StartupPath, "Template.docx");
         internal static string PathSaveTo;
@@ -46,20 +47,20 @@ namespace CaurixTemplateOperator
         public static void OrganizerStart()
         {
             ConnectDb();
-            ExportFiles();
+            //ExportFiles();
         }
 
         public static void ConnectDb()
         {
             try
             {
-                MysqlConn = new MySqlConnection
+                OdbcConn = new OdbcConnection
                 {
-                    ConnectionString = "Server=" + CaurixTemplate.Default.ServerAddress + "; Port=" + CaurixTemplate.Default.Port + "; User ID=" + CaurixTemplate.Default.UserID + "; Password=" + CaurixTemplate.Default.Password + "; Database=" + CaurixTemplate.Default.DatabaseName + ";" 
+                    ConnectionString = "Driver={MySQL ODBC 5.3 Unicode Driver}; server=" + CaurixTemplate.Default.ServerAddress + "; port=" + (int)CaurixTemplate.Default.Port + "; database=" + CaurixTemplate.Default.DatabaseName + "; uid=" + CaurixTemplate.Default.UserID + "; password=" + CaurixTemplate.Default.Password + ";"
                 };
-                MysqlConn.Open();
+                OdbcConn.Open();
                 Command.CommandText = SQL;
-                Command.Connection = MysqlConn;
+                Command.Connection = OdbcConn;
                 Adapter.SelectCommand = Command;
                 data = Command.ExecuteReader();
 
@@ -67,7 +68,7 @@ namespace CaurixTemplateOperator
                 {
                     DbOutput item = new DbOutput
                     {
-                        Id = (long)data["id"],
+                        Id = long.Parse(data["id"].ToString()),
                         Source = data["Source"].ToString(),
                         Gender = data["Gender"].ToString(),
                         Prenom = data["Prenom"].ToString(),
@@ -84,21 +85,24 @@ namespace CaurixTemplateOperator
                     DbList.Add(item);
                 }
 
-                MysqlConn.Close();
+                OdbcConn.Close();
+
+                
             }
-            catch (MySqlException ex)
+            catch (System.Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                OdbcConn.Close();
             }
             //SQL = "SELECT * FROM mac WHERE mac = '" + macAddress + "'";
-            
 
 
-            /*if ((int)MysqlConn.State == 1)
+
+            /*if ((int)OdbcConn.State == 1)
             {
                 SQL = "SELECT * FROM mac WHERE mac = '" + macAddress + "'";
                 Command.CommandText = SQL;
-                Command.Connection = MysqlConn;
+                Command.Connection = OdbcConn;
                 Adapter.SelectCommand = Command;
                 data = Command.ExecuteReader();
                 if (data.HasRows == false)
@@ -106,10 +110,11 @@ namespace CaurixTemplateOperator
                     this.Close();
                 }
             }*/
+            ExportFiles();
 
         }
 
-        public static dynamic LoadImageFromEmail(string number, string nameKey)
+        /*public static dynamic LoadImageFromEmail(string number, string nameKey)
         {
             var OutlookApp = new Outlook.Application();
             Outlook.Account thisAccount = null;
@@ -200,7 +205,7 @@ namespace CaurixTemplateOperator
             }
             
             return 0;
-        }
+        }*/
 
         public static void ExportFiles()
         {
@@ -234,11 +239,13 @@ namespace CaurixTemplateOperator
                 wdoc.ExportAsFixedFormat(PathSaveTo + "temp",Word.WdExportFormat.wdExportFormatPDF,false);
                 wdoc.Close(SaveChanges: false);
                 var finalpath = PathSaveTo + "export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" + itemDbOutput.Id;
-                InsertImagesIntoPDF(PathSaveTo + "temp",finalpath);
+                Image sign = null;
+                Image identif = null;
+                //InsertImagesIntoPDF(PathSaveTo + "temp",finalpath, LoadImageFromEmail(itemDbOutput.MSIDN,"signature"), LoadImageFromEmail(itemDbOutput.MSIDN,"identif"));
             }
         }
 
-        public static void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
+        /*public static void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
         {
 
             using (Stream inputPdfStream = new FileStream(pdfInput, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -270,7 +277,7 @@ namespace CaurixTemplateOperator
                 stamper.Close();
             }
             
-        }
+        }*/
 
 
 
@@ -316,6 +323,7 @@ namespace CaurixTemplateOperator
     }
 
     [Serializable]
+    
     public class ReplaceDictionaryElement
     {
         public string key { get; set; }
@@ -333,10 +341,14 @@ namespace CaurixTemplateOperator
         public int GetIndexByKeyName(string key)
         {
             int c = -1;
+            int d = -1;
             foreach (var e in elem)
             {
-                c++;
-                if (e.key == key) { break;}
+                d++;
+                if (e.key == key)
+                {
+                    c = d;
+                    break;}
             }
 
             return c;
