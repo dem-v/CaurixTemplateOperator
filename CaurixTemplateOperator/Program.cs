@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -8,12 +10,15 @@ using System.Windows.Forms;
 //using MySql.Data.MySqlClient;
 using System.Data.Odbc;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using Microsoft.Office.Interop.Outlook;
 using Newtonsoft.Json;
 using Application = System.Windows.Forms.Application;
 using Word = Microsoft.Office.Interop.Word;
 using Outlook = Microsoft.Office.Interop.Outlook;
 using iTextSharp.text.pdf;
+using Timer = System.Threading.Timer;
 
 namespace CaurixTemplateOperator
 {
@@ -25,7 +30,7 @@ namespace CaurixTemplateOperator
         internal static OdbcDataReader data;
         internal static string SQL = "select * from subscriber LIMIT 0, 30";
         public static List<DbOutput> DbList = new List<DbOutput>();
-        internal static object WordTemplatePath = Path.Combine(System.Windows.Forms.Application.StartupPath, "Template.docx");
+        internal static object WordTemplatePath = CaurixTemplate.Default.TemplatePath;
         internal static string PathSaveTo;
         public static bool DisableLoadingPicturesFromEmail = CaurixTemplate.Default.DisableLoadingImagesFromEmail;
 
@@ -39,6 +44,7 @@ namespace CaurixTemplateOperator
         //[STAThread]
         static void Main()
         {
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Starting form 1");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(fff = new Form1());
@@ -52,6 +58,7 @@ namespace CaurixTemplateOperator
 
         public static void ConnectDb()
         {
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Trying to connect to DB...");
             try
             {
                 OdbcConn = new OdbcConnection
@@ -59,10 +66,12 @@ namespace CaurixTemplateOperator
                     ConnectionString = "Driver={MySQL ODBC 5.3 Unicode Driver}; server=" + CaurixTemplate.Default.ServerAddress + "; port=" + (int)CaurixTemplate.Default.Port + "; database=" + CaurixTemplate.Default.DatabaseName + "; uid=" + CaurixTemplate.Default.UserID + "; password=" + CaurixTemplate.Default.Password + ";"
                 };
                 OdbcConn.Open();
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Connection opened successfully");
                 Command.CommandText = SQL;
                 Command.Connection = OdbcConn;
                 Adapter.SelectCommand = Command;
                 data = Command.ExecuteReader();
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Data received");
 
                 while (data.Read())
                 {
@@ -84,15 +93,13 @@ namespace CaurixTemplateOperator
                     };
                     DbList.Add(item);
                 }
-
                 OdbcConn.Close();
-
-                
             }
             catch (System.Exception ex)
             {
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Error with database: " + ex.Source + " " + ex.Message);
                 MessageBox.Show(ex.Message);
-                OdbcConn.Close();
+                if (OdbcConn.State != ConnectionState.Closed) OdbcConn.Close();
             }
             //SQL = "SELECT * FROM mac WHERE mac = '" + macAddress + "'";
 
@@ -210,13 +217,20 @@ namespace CaurixTemplateOperator
         public static void ExportFiles()
         {
             
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting files");
             var WordApp = new Word.Application{Visible = false};
+            WordTemplatePath = CaurixTemplate.Default.TemplatePath;
 
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Word is ready. Files to export " + DbList.Count);
             foreach (var itemDbOutput in DbList)
             {
+                var check = CheckIfToSkip(itemDbOutput.MSIDN);
+                if (check) continue;
+
                 Word.Document wdoc = WordApp.Documents.Open(ref WordTemplatePath, ReadOnly: false, Visible: false);
                 wdoc.Activate();
 
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting "+ itemDbOutput.Id);
                 var dbstr = itemDbOutput.ConvertToStrings();
                 int cnt = -1;
                 foreach (var s in itemDbOutput.GetListOfStrings())
@@ -236,13 +250,39 @@ namespace CaurixTemplateOperator
                     }
                 }
 
-                wdoc.ExportAsFixedFormat(PathSaveTo + "temp",Word.WdExportFormat.wdExportFormatPDF,false);
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting to PDF");
+                var finalpath = PathSaveTo + /*"export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" +*/ itemDbOutput.MSIDN;
+                wdoc.ExportAsFixedFormat(/*PathSaveTo + "temp"*/finalpath,Word.WdExportFormat.wdExportFormatPDF,false);
                 wdoc.Close(SaveChanges: false);
-                var finalpath = PathSaveTo + "export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" + itemDbOutput.Id;
+                
                 Image sign = null;
                 Image identif = null;
+                //Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
                 //InsertImagesIntoPDF(PathSaveTo + "temp",finalpath, LoadImageFromEmail(itemDbOutput.MSIDN,"signature"), LoadImageFromEmail(itemDbOutput.MSIDN,"identif"));
             }
+
+            
+        }
+
+        public static bool CheckIfToSkip(string inputIDN)
+        {
+            List<string> MSIDN_Log = CaurixTemplate.Default.IdsToSkip.Split(',').ToList();
+            foreach (var i in MSIDN_Log)
+            {
+                if (inputIDN == i)
+                {
+                    return true;
+                }
+            }
+
+            CaurixTemplate.Default.IdsToSkip += MSIDN_Log.Count ==0 ? inputIDN : ',' + inputIDN;
+            CaurixTemplate.Default.Save();
+            return false;
+        }
+
+        public static void PushMessageToForm(string m)
+        {
+            fff?.PushToStatus(m);
         }
 
         /*public static void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
@@ -348,10 +388,58 @@ namespace CaurixTemplateOperator
                 if (e.key == key)
                 {
                     c = d;
-                    break;}
+                    break;
+                }
             }
 
             return c;
+        }
+    }
+
+    public static class Logger
+    {
+        static AsyncLogWriter alw = new AsyncLogWriter();
+        
+        public static void Push(string threadName, string message, string eventTime = "")
+        {
+            if (eventTime == "") eventTime = "[" + DateTime.Now.ToString("O") + "]";
+            var combinedString = eventTime + ": " + threadName + ": " + message;
+            alw.AddMessage(combinedString);
+            Program.PushMessageToForm(combinedString);
+        }
+    }
+
+    public class AsyncLogWriter
+    {
+        public static string pathToLog = Application.StartupPath + "\\log.txt";
+        private static StreamWriter logStream;
+
+        private static BackgroundWorker writerAsync = new BackgroundWorker();
+        private static BackgroundWorker timerWorker = new BackgroundWorker();
+        private static List<string> pendingList = new List<string>();
+
+        public AsyncLogWriter()
+        {
+            writerAsync.DoWork += WriterAsync_DoWork;
+            timerWorker.DoWork += delegate(object sender, DoWorkEventArgs args) {Thread.Sleep(1000);};
+            timerWorker.RunWorkerCompleted += delegate(object sender, RunWorkerCompletedEventArgs args) {  if (pendingList.Count>0) {writerAsync.RunWorkerAsync(string.Join("\n\r", pendingList)); pendingList.Clear();}};
+        }
+
+        public void AddMessage(string m)
+        {
+            pendingList.Add(m);
+            if (!timerWorker.IsBusy) timerWorker.RunWorkerAsync();
+        }
+
+        private void WriterAsync_DoWork(object sender, DoWorkEventArgs e)
+        {
+            using (logStream = new StreamWriter(new FileStream(pathToLog, FileMode.Append, FileAccess.Write)))
+            {
+                //StringBuilder s = new StringBuilder();
+                //pendingList.ToArray()
+                logStream.WriteLine(e.Argument.ToString());
+            }
+            return;
         }
     }
 }
