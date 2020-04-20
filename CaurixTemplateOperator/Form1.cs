@@ -45,13 +45,13 @@ namespace CaurixTemplateOperator
                 {
                     Thread.Sleep(1000);
                     if (backgroundWorker.CancellationPending)
-                    { Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": BW: Cancellation started."); StatusLbl.Text = "not scheduled"; return;}
+                    { Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": BW: Cancellation started."); PushToLabel("not scheduled"); return;}
                 }
 
                 if (backgroundWorker.CancellationPending)
                 {
                     Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": BW: Cancellation started.");
-                    StatusLbl.Text = "not scheduled";
+                    PushToLabel("not scheduled");
                     return;
                 }
                 backgroundWorker.ReportProgress(100);
@@ -97,7 +97,7 @@ namespace CaurixTemplateOperator
                 IsRunning = false;
                 StopBtn.Enabled = false;
                 StartBtn.Enabled = true;
-                StatusLbl.Text = "Cancelled";
+                PushToLabel("Cancelled");
                 return;
             }
 
@@ -213,6 +213,18 @@ namespace CaurixTemplateOperator
         public void PushToStatus(string m)
         {
             toolStripStatusLabel1.Text = m;
+        }
+
+        public void PushToLabel(string m)
+        {
+            if (StatusLbl.InvokeRequired)
+            {
+                StatusLbl.Invoke(new MethodInvoker(delegate { StatusLbl.Text = m; }));
+            }
+            else
+            {
+                StatusLbl.Text = m;
+            }
         }
 
     }
