@@ -39,6 +39,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_2E1992F4D1C84DA9927664AB5AC1A6A2"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_477D2309171DE23A104F3FFA07E3E8CA"
         "OwnerKey" = "8:_C5A8C1E909519ACFE9FB082ED2ABD484"
         "MsmSig" = "8:_UNDEFINED"
@@ -93,6 +99,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_7263ABE7CA14447E8877C47AB2C6FC6D"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_7949ADF4756B414BB0704994D38EC601"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -141,6 +153,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_B7B7A54581604AA58E84419DC4BA4D5A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_C5A8C1E909519ACFE9FB082ED2ABD484"
         "OwnerKey" = "8:_A0A4579F389B4D88941D68C920158579"
         "MsmSig" = "8:_UNDEFINED"
@@ -171,20 +189,26 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_CA6266ACECB8455B9BEAD2EBDDB5EC20"
+        "MsmKey" = "8:_D0DE73BA0A1940C59E938B2016F8BB60"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_7949ADF4756B414BB0704994D38EC601"
+        "MsmKey" = "8:_F6D6E9EDEA704107BC614F097EDDAFEA"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_A0A4579F389B4D88941D68C920158579"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_7949ADF4756B414BB0704994D38EC601"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -253,6 +277,12 @@
         "OwnerKey" = "8:_9756BD8233CB86944EFE3263FCA8727C"
         "MsmSig" = "8:_UNDEFINED"
         }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_CA6266ACECB8455B9BEAD2EBDDB5EC20"
+        "MsmSig" = "8:_UNDEFINED"
+        }
     }
     "Configurations"
     {
@@ -303,6 +333,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.6.1"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.6.1 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.6.1"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -439,6 +485,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2E1992F4D1C84DA9927664AB5AC1A6A2"
+            {
+            "SourcePath" = "8:..\\..\\..\\..\\Downloads\\NDP461-KB3102438-Web.exe"
+            "TargetName" = "8:NDP461-KB3102438-Web.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_8E9CC572A7094DF1A981C303C7D07F0D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_477D2309171DE23A104F3FFA07E3E8CA"
             {
             "AssemblyRegister" = "3:1"
@@ -561,6 +627,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7263ABE7CA14447E8877C47AB2C6FC6D"
+            {
+            "SourcePath" = "8:Release\\NDP461-KB3102438-Web.exe"
+            "TargetName" = "8:NDP461-KB3102438-Web.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_8E9CC572A7094DF1A981C303C7D07F0D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7949ADF4756B414BB0704994D38EC601"
@@ -707,6 +793,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B7B7A54581604AA58E84419DC4BA4D5A"
+            {
+            "SourcePath" = "8:..\\..\\..\\..\\Downloads\\mysql-connector-odbc-5.3.14-winx64.msi"
+            "TargetName" = "8:mysql-connector-odbc-5.3.14-winx64.msi"
+            "Tag" = "8:"
+            "Folder" = "8:_8E9CC572A7094DF1A981C303C7D07F0D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C5A8C1E909519ACFE9FB082ED2ABD484"
             {
             "AssemblyRegister" = "3:1"
@@ -769,6 +875,46 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D0DE73BA0A1940C59E938B2016F8BB60"
+            {
+            "SourcePath" = "8:Release\\mysql-connector-odbc-5.3.14-win32.msi"
+            "TargetName" = "8:mysql-connector-odbc-5.3.14-win32.msi"
+            "Tag" = "8:"
+            "Folder" = "8:_8E9CC572A7094DF1A981C303C7D07F0D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F6D6E9EDEA704107BC614F097EDDAFEA"
+            {
+            "SourcePath" = "8:..\\..\\..\\..\\Downloads\\mysql-connector-odbc-5.3.14-win32.msi"
+            "TargetName" = "8:mysql-connector-odbc-5.3.14-win32.msi"
+            "Tag" = "8:"
+            "Folder" = "8:_8E9CC572A7094DF1A981C303C7D07F0D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -790,7 +936,7 @@
             "{1525181F-901A-416C-8A58-119130FE478E}:_A72852945ED64F9B9335A53E46A94FFF"
             {
             "Name" = "8:#1916"
-            "AlwaysCreate" = "11:FALSE"
+            "AlwaysCreate" = "11:TRUE"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Property" = "8:DesktopFolder"
@@ -863,7 +1009,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:SetupProj"
         "ProductCode" = "8:{D2BA06A2-2087-47FF-ADBA-20E1E81FA14F}"
-        "PackageCode" = "8:{B5DCAC02-E8DF-4461-A32D-D9440986454E}"
+        "PackageCode" = "8:{0500DB55-70AE-4DC5-AB5C-F1DBE9701111}"
         "UpgradeCode" = "8:{1784322D-B986-403E-B0D4-A2B1891BE43F}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -983,7 +1129,7 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_EFB150792ED7485084C28995A0B8EE78"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_34D810AFCACE49A48AA455E4EEB49974"
             {
             "Name" = "8:Caurix Template Operator"
             "Arguments" = "8:"

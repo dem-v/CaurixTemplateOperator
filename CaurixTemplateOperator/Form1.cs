@@ -19,6 +19,7 @@ namespace CaurixTemplateOperator
         private BackgroundWorker backgroundWorker;
         private BackgroundWorker schedulerWorker;
 
+        internal string ttt = "";
         ///public string PathSaveTo = String.Empty;
 
         public Form1()
@@ -120,25 +121,57 @@ namespace CaurixTemplateOperator
 
         private void OpenFolderDialogBtn_Click(object sender, EventArgs e)
         {
-            var ttt = String.Empty;
-            Thread t = new Thread((ThreadStart)(() =>
+            /*BackgroundWorker background = new BackgroundWorker(){WorkerReportsProgress = true,WorkerSupportsCancellation = false};
+            background.DoWork += delegate(object s, DoWorkEventArgs args)
             {
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": FolderBrowserDialog is called");
                 folderBrowserDialog1.RootFolder = Environment.SpecialFolder.Desktop;
                 folderBrowserDialog1.ShowNewFolderButton = true;
                 var result = folderBrowserDialog1.ShowDialog();
                 if (result != DialogResult.Cancel && result != DialogResult.None)
-                    ttt = folderBrowserDialog1.SelectedPath;
+                    args.Result = folderBrowserDialog1.SelectedPath;    
                 return;
+            };
+            
+            background.RunWorkerCompleted += (send, args) =>
+            {
+                ttt = args.Result.ToString();
+                return;
+            };
+
+            background.RunWorkerAsync();*/
+
+            //var ttt = String.Empty;
+            /*Thread t = new Thread((ThreadStart)(() =>
+            {
+                
             }));
             t.Name = "ddd";
             t.SetApartmentState(ApartmentState.STA);
             t.Start();
-            t.Join();
+            //t.Join();*/
+
+            FolderBrowserAsync();
+
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": got SaveTo path...");
-            CaurixTemplate.Default.PathSaveTo = ttt + "\\";
-            CaurixTemplate.Default.Save();
+            
             //PathSaveToText.Text = CaurixTemplate.Default.PathSaveTo;
+        }
+
+        [STAThread]
+        public void FolderBrowserAsync()
+        {
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": FolderBrowserDialog is called");
+            folderBrowserDialog1.RootFolder = Environment.SpecialFolder.Desktop;
+            folderBrowserDialog1.ShowNewFolderButton = true;
+            var result = folderBrowserDialog1.ShowDialog();
+            ttt = "";
+            if (result != DialogResult.Cancel && result != DialogResult.None)
+            {
+                ttt = folderBrowserDialog1.SelectedPath;
+                CaurixTemplate.Default.PathSaveTo = ttt + "\\";
+                CaurixTemplate.Default.Save();
+            }
         }
 
         public void InvokerRunner(DateTime nextTime)
