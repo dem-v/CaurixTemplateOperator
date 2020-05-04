@@ -20,7 +20,7 @@ namespace updOutlookRegValues
         {
 
             RegistryKey baseLocMachineKey = Environment.Is64BitOperatingSystem ? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) : RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-            
+            RegistryKey baseCurrUserKey = Environment.Is64BitOperatingSystem ? RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64) : RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32);
 
             //subKey.GetValue();
 
@@ -128,213 +128,240 @@ namespace updOutlookRegValues
             if (addr != "")
             {
                 //addr2 = addr.Replace("CURRENT_USER", "LOCAL_MACHINE");
-                
-                RegistryKey userSKey = Registry.CurrentUser.CreateSubKey(addr.Replace(@"HKEY_CURRENT_USER\", "") + @"\Security");
+
+                RegistryKey subLocMachKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true).OpenSubKey("Microsoft", true)
+                    .OpenSubKey("Office", true).OpenSubKey(ver, true).OpenSubKey("Outlook", true)
+                    .CreateSubKey("Security");
+                RegistryKey subLocMachPoliciesKey = baseLocMachineKey.CreateSubKey("SOFTWARE").CreateSubKey("Policies")
+                    .CreateSubKey("Microsoft").CreateSubKey("Office").CreateSubKey(ver).CreateSubKey("Outlook")
+                    .CreateSubKey("Security");
+                RegistryKey subCurrUserKey = baseCurrUserKey.OpenSubKey("SOFTWARE", true).OpenSubKey("Microsoft", true)
+                    .OpenSubKey("Office", true).OpenSubKey(ver, true).OpenSubKey("Outlook", true)
+                    .CreateSubKey("Security");
+
+                /*RegistryKey userSKey = Registry.CurrentUser.CreateSubKey(addr.Replace(@"HKEY_CURRENT_USER\", "") + @"\Security");
                 RegistryKey locMachKey =
                     Registry.LocalMachine.CreateSubKey(@"Software\Policies\Microsoft\Office\" + ver + @"\Outlook" + @"\Security");
                 RegistryKey locMachKey2 =
-                    Registry.LocalMachine.CreateSubKey(addr.Replace(@"HKEY_CURRENT_USER\", "") + @"\Security");
+                    Registry.LocalMachine.CreateSubKey(addr.Replace(@"HKEY_CURRENT_USER\", "") + @"\Security");*/
 
                 FileStream f = File.Create("setupLog.reg");
                 using (StreamWriter stream = new StreamWriter(f))
                 {
                     stream.WriteLine("Windows Registry Editor Version 5.00");
                     stream.WriteLine();
-                    stream.WriteLine("[" + addr + @"\Security" + "]");
+                    stream.WriteLine("[" + subCurrUserKey.ToString() + "]");
 
-                    var t = userSKey.GetValue("CheckAdminSettings", null);
+                    var t = subCurrUserKey.GetValue("CheckAdminSettings", null);
                     if (t == null) stream.WriteLine("\"CheckAdminSettings\"=-");
                     else stream.WriteLine("\"CheckAdminSettings\"=dword:"+t);
-                    userSKey.SetValue("CheckAdminSettings",1);
+                    subCurrUserKey.SetValue("CheckAdminSettings",1);
                     t = null;
 
-                    t = userSKey.GetValue("AdminSecurityMode", null);
+                    t = subCurrUserKey.GetValue("AdminSecurityMode", null);
                     if (t == null) stream.WriteLine("\"AdminSecurityMode\"=-");
                     else stream.WriteLine("\"AdminSecurityMode\"=dword:" + t);
-                    userSKey.SetValue("AdminSecurityMode", 3);
+                    subCurrUserKey.SetValue("AdminSecurityMode", 3);
                     t = null;
 
-                    t = userSKey.GetValue("PromptSimpleMAPISend", null);
+                    t = subCurrUserKey.GetValue("PromptSimpleMAPISend", null);
                     if (t == null) stream.WriteLine("\"PromptSimpleMAPISend\"=-");
                     else stream.WriteLine("\"PromptSimpleMAPISend\"=dword:" + t);
-                    userSKey.SetValue("PromptSimpleMAPISend", 2);
+                    subCurrUserKey.SetValue("PromptSimpleMAPISend", 2);
                     t = null;
 
-                    t = userSKey.GetValue("PromptSimpleMAPINameResolve", null);
+                    t = subCurrUserKey.GetValue("PromptSimpleMAPINameResolve", null);
                     if (t == null) stream.WriteLine("\"PromptSimpleMAPINameResolve\"=-");
                     else stream.WriteLine("\"PromptSimpleMAPINameResolve\"=dword:" + t);
-                    userSKey.SetValue("PromptSimpleMAPINameResolve", 2);
+                    subCurrUserKey.SetValue("PromptSimpleMAPINameResolve", 2);
                     t = null;
 
-                    t = userSKey.GetValue("PromptSimpleMAPIOpenMessage", null);
+                    t = subCurrUserKey.GetValue("PromptSimpleMAPIOpenMessage", null);
                     if (t == null) stream.WriteLine("\"PromptSimpleMAPIOpenMessage\"=-");
                     else stream.WriteLine("\"PromptSimpleMAPIOpenMessage\"=dword:" + t);
-                    userSKey.SetValue("PromptSimpleMAPIOpenMessage", 2);
+                    subCurrUserKey.SetValue("PromptSimpleMAPIOpenMessage", 2);
                     t = null;
 
-                    t = userSKey.GetValue("PromptOOMCustomAction", null);
+                    t = subCurrUserKey.GetValue("PromptOOMCustomAction", null);
                     if (t == null) stream.WriteLine("\"PromptOOMCustomAction\"=-");
                     else stream.WriteLine("\"PromptOOMCustomAction\"=dword:" + t);
-                    userSKey.SetValue("PromptOOMCustomAction", 2);
+                    subCurrUserKey.SetValue("PromptOOMCustomAction", 2);
                     t = null;
 
-                    t = userSKey.GetValue("PromptOOMSend", null);
+                    t = subCurrUserKey.GetValue("PromptOOMSend", null);
                     if (t == null) stream.WriteLine("\"PromptOOMSend\"=-");
                     else stream.WriteLine("\"PromptOOMSend\"=dword:" + t);
-                    userSKey.SetValue("PromptOOMSend", 2);
+                    subCurrUserKey.SetValue("PromptOOMSend", 2);
                     t = null;
 
-                    t = userSKey.GetValue("PromptOOMAddressBookAccess", null);
+                    t = subCurrUserKey.GetValue("PromptOOMAddressBookAccess", null);
                     if (t == null) stream.WriteLine("\"PromptOOMAddressBookAccess\"=-");
                     else stream.WriteLine("\"PromptOOMAddressBookAccess\"=dword:" + t);
-                    userSKey.SetValue("PromptOOMAddressBookAccess", 2);
+                    subCurrUserKey.SetValue("PromptOOMAddressBookAccess", 2);
                     t = null;
 
-                    t = userSKey.GetValue("PromptOOMAddressInformationAccess", null);
+                    t = subCurrUserKey.GetValue("PromptOOMAddressInformationAccess", null);
                     if (t == null) stream.WriteLine("\"PromptOOMAddressInformationAccess\"=-");
                     else stream.WriteLine("\"PromptOOMAddressInformationAccess\"=dword:" + t);
-                    userSKey.SetValue("PromptOOMAddressInformationAccess", 2);
+                    subCurrUserKey.SetValue("PromptOOMAddressInformationAccess", 2);
                     t = null;
 
-                    t = userSKey.GetValue("PromptOOMMeetingTaskRequestResponse", null);
+                    t = subCurrUserKey.GetValue("PromptOOMMeetingTaskRequestResponse", null);
                     if (t == null) stream.WriteLine("\"PromptOOMMeetingTaskRequestResponse\"=-");
                     else stream.WriteLine("\"PromptOOMMeetingTaskRequestResponse\"=dword:" + t);
-                    userSKey.SetValue("PromptOOMMeetingTaskRequestResponse", 2);
+                    subCurrUserKey.SetValue("PromptOOMMeetingTaskRequestResponse", 2);
                     t = null;
 
+                    t = subCurrUserKey.GetValue("ObjectModelGuard", null);
+                    if (t == null) stream.WriteLine("\"ObjectModelGuard\"=-");
+                    else stream.WriteLine("\"ObjectModelGuard\"=dword:" + t);
+                    subCurrUserKey.SetValue("ObjectModelGuard", 2);
+                    t = null;
+                    
 
                     stream.WriteLine();
-                    stream.WriteLine("[" + addr2 + @"\Security" + "]");
+                    stream.WriteLine("[" + subLocMachKey.ToString() + "]");
 
-                    t = locMachKey2.GetValue("CheckAdminSettings", null);
+                    t = subLocMachKey.GetValue("CheckAdminSettings", null);
                     if (t == null) stream.WriteLine("\"CheckAdminSettings\"=-");
                     else stream.WriteLine("\"CheckAdminSettings\"=dword:" + t);
-                    locMachKey2.SetValue("CheckAdminSettings", 1);
+                    subLocMachKey.SetValue("CheckAdminSettings", 1);
                     t = null;
 
-                    t = locMachKey2.GetValue("AdminSecurityMode", null);
+                    t = subLocMachKey.GetValue("AdminSecurityMode", null);
                     if (t == null) stream.WriteLine("\"AdminSecurityMode\"=-");
                     else stream.WriteLine("\"AdminSecurityMode\"=dword:" + t);
-                    locMachKey2.SetValue("AdminSecurityMode", 3);
+                    subLocMachKey.SetValue("AdminSecurityMode", 3);
                     t = null;
 
-                    t = locMachKey2.GetValue("PromptSimpleMAPISend", null);
+                    t = subLocMachKey.GetValue("PromptSimpleMAPISend", null);
                     if (t == null) stream.WriteLine("\"PromptSimpleMAPISend\"=-");
                     else stream.WriteLine("\"PromptSimpleMAPISend\"=dword:" + t);
-                    locMachKey2.SetValue("PromptSimpleMAPISend", 2);
+                    subLocMachKey.SetValue("PromptSimpleMAPISend", 2);
                     t = null;
 
-                    t = locMachKey2.GetValue("PromptSimpleMAPINameResolve", null);
+                    t = subLocMachKey.GetValue("PromptSimpleMAPINameResolve", null);
                     if (t == null) stream.WriteLine("\"PromptSimpleMAPINameResolve\"=-");
                     else stream.WriteLine("\"PromptSimpleMAPINameResolve\"=dword:" + t);
-                    locMachKey2.SetValue("PromptSimpleMAPINameResolve", 2);
+                    subLocMachKey.SetValue("PromptSimpleMAPINameResolve", 2);
                     t = null;
 
-                    t = locMachKey2.GetValue("PromptSimpleMAPIOpenMessage", null);
+                    t = subLocMachKey.GetValue("PromptSimpleMAPIOpenMessage", null);
                     if (t == null) stream.WriteLine("\"PromptSimpleMAPIOpenMessage\"=-");
                     else stream.WriteLine("\"PromptSimpleMAPIOpenMessage\"=dword:" + t);
-                    locMachKey2.SetValue("PromptSimpleMAPIOpenMessage", 2);
+                    subLocMachKey.SetValue("PromptSimpleMAPIOpenMessage", 2);
                     t = null;
 
-                    t = locMachKey2.GetValue("PromptOOMCustomAction", null);
+                    t = subLocMachKey.GetValue("PromptOOMCustomAction", null);
                     if (t == null) stream.WriteLine("\"PromptOOMCustomAction\"=-");
                     else stream.WriteLine("\"PromptOOMCustomAction\"=dword:" + t);
-                    locMachKey2.SetValue("PromptOOMCustomAction", 2);
+                    subLocMachKey.SetValue("PromptOOMCustomAction", 2);
                     t = null;
 
-                    t = locMachKey2.GetValue("PromptOOMSend", null);
+                    t = subLocMachKey.GetValue("PromptOOMSend", null);
                     if (t == null) stream.WriteLine("\"PromptOOMSend\"=-");
                     else stream.WriteLine("\"PromptOOMSend\"=dword:" + t);
-                    locMachKey2.SetValue("PromptOOMSend", 2);
+                    subLocMachKey.SetValue("PromptOOMSend", 2);
                     t = null;
 
-                    t = locMachKey2.GetValue("PromptOOMAddressBookAccess", null);
+                    t = subLocMachKey.GetValue("PromptOOMAddressBookAccess", null);
                     if (t == null) stream.WriteLine("\"PromptOOMAddressBookAccess\"=-");
                     else stream.WriteLine("\"PromptOOMAddressBookAccess\"=dword:" + t);
-                    locMachKey2.SetValue("PromptOOMAddressBookAccess", 2);
+                    subLocMachKey.SetValue("PromptOOMAddressBookAccess", 2);
                     t = null;
 
-                    t = locMachKey2.GetValue("PromptOOMAddressInformationAccess", null);
+                    t = subLocMachKey.GetValue("PromptOOMAddressInformationAccess", null);
                     if (t == null) stream.WriteLine("\"PromptOOMAddressInformationAccess\"=-");
                     else stream.WriteLine("\"PromptOOMAddressInformationAccess\"=dword:" + t);
-                    locMachKey2.SetValue("PromptOOMAddressInformationAccess", 2);
+                    subLocMachKey.SetValue("PromptOOMAddressInformationAccess", 2);
                     t = null;
 
-                    t = locMachKey2.GetValue("PromptOOMMeetingTaskRequestResponse", null);
+                    t = subLocMachKey.GetValue("PromptOOMMeetingTaskRequestResponse", null);
                     if (t == null) stream.WriteLine("\"PromptOOMMeetingTaskRequestResponse\"=-");
                     else stream.WriteLine("\"PromptOOMMeetingTaskRequestResponse\"=dword:" + t);
-                    locMachKey2.SetValue("PromptOOMMeetingTaskRequestResponse", 2);
+                    subLocMachKey.SetValue("PromptOOMMeetingTaskRequestResponse", 2);
                     t = null;
 
+                    t = subLocMachKey.GetValue("ObjectModelGuard", null);
+                    if (t == null) stream.WriteLine("\"ObjectModelGuard\"=-");
+                    else stream.WriteLine("\"ObjectModelGuard\"=dword:" + t);
+                    subLocMachKey.SetValue("ObjectModelGuard", 2);
+                    t = null;
 
                     stream.WriteLine();
-                    stream.WriteLine("[" + @"HKEY_LOCAL_MACHINE\" + @"Software\Policies\Microsoft\Office\" + ver + @"\Outlook" + @"\Security" + "]");
+                    stream.WriteLine("[" + subLocMachPoliciesKey.ToString() + "]");
 
-                    t = locMachKey.GetValue("CheckAdminSettings", null);
+                    t = subLocMachPoliciesKey.GetValue("CheckAdminSettings", null);
                     if (t == null) stream.WriteLine("\"CheckAdminSettings\"=-");
                     else stream.WriteLine("\"CheckAdminSettings\"=dword:" + t);
-                    locMachKey.SetValue("CheckAdminSettings", 1);
+                    subLocMachPoliciesKey.SetValue("CheckAdminSettings", 1);
                     t = null;
 
-                    t = locMachKey.GetValue("AdminSecurityMode", null);
+                    t = subLocMachPoliciesKey.GetValue("AdminSecurityMode", null);
                     if (t == null) stream.WriteLine("\"AdminSecurityMode\"=-");
                     else stream.WriteLine("\"AdminSecurityMode\"=dword:" + t);
-                    locMachKey.SetValue("AdminSecurityMode", 3);
+                    subLocMachPoliciesKey.SetValue("AdminSecurityMode", 3);
                     t = null;
 
-                    t = locMachKey.GetValue("PromptSimpleMAPISend", null);
+                    t = subLocMachPoliciesKey.GetValue("PromptSimpleMAPISend", null);
                     if (t == null) stream.WriteLine("\"PromptSimpleMAPISend\"=-");
                     else stream.WriteLine("\"PromptSimpleMAPISend\"=dword:" + t);
-                    locMachKey.SetValue("PromptSimpleMAPISend", 2);
+                    subLocMachPoliciesKey.SetValue("PromptSimpleMAPISend", 2);
                     t = null;
 
-                    t = locMachKey.GetValue("PromptSimpleMAPINameResolve", null);
+                    t = subLocMachPoliciesKey.GetValue("PromptSimpleMAPINameResolve", null);
                     if (t == null) stream.WriteLine("\"PromptSimpleMAPINameResolve\"=-");
                     else stream.WriteLine("\"PromptSimpleMAPINameResolve\"=dword:" + t);
-                    locMachKey.SetValue("PromptSimpleMAPINameResolve", 2);
+                    subLocMachPoliciesKey.SetValue("PromptSimpleMAPINameResolve", 2);
                     t = null;
 
-                    t = locMachKey.GetValue("PromptSimpleMAPIOpenMessage", null);
+                    t = subLocMachPoliciesKey.GetValue("PromptSimpleMAPIOpenMessage", null);
                     if (t == null) stream.WriteLine("\"PromptSimpleMAPIOpenMessage\"=-");
                     else stream.WriteLine("\"PromptSimpleMAPIOpenMessage\"=dword:" + t);
-                    locMachKey.SetValue("PromptSimpleMAPIOpenMessage", 2);
+                    subLocMachPoliciesKey.SetValue("PromptSimpleMAPIOpenMessage", 2);
                     t = null;
 
-                    t = locMachKey.GetValue("PromptOOMCustomAction", null);
+                    t = subLocMachPoliciesKey.GetValue("PromptOOMCustomAction", null);
                     if (t == null) stream.WriteLine("\"PromptOOMCustomAction\"=-");
                     else stream.WriteLine("\"PromptOOMCustomAction\"=dword:" + t);
-                    locMachKey.SetValue("PromptOOMCustomAction", 2);
+                    subLocMachPoliciesKey.SetValue("PromptOOMCustomAction", 2);
                     t = null;
 
-                    t = locMachKey.GetValue("PromptOOMSend", null);
+                    t = subLocMachPoliciesKey.GetValue("PromptOOMSend", null);
                     if (t == null) stream.WriteLine("\"PromptOOMSend\"=-");
                     else stream.WriteLine("\"PromptOOMSend\"=dword:" + t);
-                    locMachKey.SetValue("PromptOOMSend", 2);
+                    subLocMachPoliciesKey.SetValue("PromptOOMSend", 2);
                     t = null;
 
-                    t = locMachKey.GetValue("PromptOOMAddressBookAccess", null);
+                    t = subLocMachPoliciesKey.GetValue("PromptOOMAddressBookAccess", null);
                     if (t == null) stream.WriteLine("\"PromptOOMAddressBookAccess\"=-");
                     else stream.WriteLine("\"PromptOOMAddressBookAccess\"=dword:" + t);
-                    locMachKey.SetValue("PromptOOMAddressBookAccess", 2);
+                    subLocMachPoliciesKey.SetValue("PromptOOMAddressBookAccess", 2);
                     t = null;
 
-                    t = locMachKey.GetValue("PromptOOMAddressInformationAccess", null);
+                    t = subLocMachPoliciesKey.GetValue("PromptOOMAddressInformationAccess", null);
                     if (t == null) stream.WriteLine("\"PromptOOMAddressInformationAccess\"=-");
                     else stream.WriteLine("\"PromptOOMAddressInformationAccess\"=dword:" + t);
-                    locMachKey.SetValue("PromptOOMAddressInformationAccess", 2);
+                    subLocMachPoliciesKey.SetValue("PromptOOMAddressInformationAccess", 2);
                     t = null;
 
-                    t = locMachKey.GetValue("PromptOOMMeetingTaskRequestResponse", null);
+                    t = subLocMachPoliciesKey.GetValue("PromptOOMMeetingTaskRequestResponse", null);
                     if (t == null) stream.WriteLine("\"PromptOOMMeetingTaskRequestResponse\"=-");
                     else stream.WriteLine("\"PromptOOMMeetingTaskRequestResponse\"=dword:" + t);
-                    locMachKey.SetValue("PromptOOMMeetingTaskRequestResponse", 2);
+                    subLocMachPoliciesKey.SetValue("PromptOOMMeetingTaskRequestResponse", 2);
+                    t = null;
+
+                    t = subLocMachPoliciesKey.GetValue("ObjectModelGuard", null);
+                    if (t == null) stream.WriteLine("\"ObjectModelGuard\"=-");
+                    else stream.WriteLine("\"ObjectModelGuard\"=dword:" + t);
+                    subLocMachPoliciesKey.SetValue("ObjectModelGuard", 2);
                     t = null;
                 }
                 f.Close();
 
-                locMachKey.Close();
-                locMachKey2.Close();
-                userSKey.Close();
+                subLocMachPoliciesKey.Close();
+                subLocMachKey.Close();
+                subCurrUserKey.Close();
             }
         }
     }

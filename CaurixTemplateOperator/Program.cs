@@ -130,7 +130,7 @@ namespace CaurixTemplateOperator
             
             Retry:
 
-            if (DisableLoadingPicturesFromEmail == true) return 0;
+            if (DisableLoadingPicturesFromEmail) return null;
 
             foreach (var account in OutlookApp.Session.Accounts)
             {
@@ -165,12 +165,12 @@ namespace CaurixTemplateOperator
                         {
                             case DialogResult.Yes:
                                 DisableLoadingPicturesFromEmail = true;
-                                return 0;
+                                return null;
                             case DialogResult.No:
                                 Environment.Exit(-1);
                                 break;
                             default:
-                                return 0;
+                                return null;
                         }
                     }
                     
@@ -192,9 +192,9 @@ namespace CaurixTemplateOperator
                 }
             }
 
-            if (inboxFolder == null) return 0;
+            if (inboxFolder == null) return null;
             var criteria = "@SQL=\"urn:schemas:httpmail:subject\" like '%" + number + "%'";
-            if (inboxFolder.Items.Restrict(criteria).Count == 0) return 0;
+            if (inboxFolder.Items.Restrict(criteria).Count == 0) return null;
 
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Mail: Reading mails for attachments");
             //List<Outlook.MailItem> mailItems = new List<MailItem>();
@@ -281,7 +281,7 @@ namespace CaurixTemplateOperator
                 var identif = LoadImageFromEmail(itemDbOutput.MSIDN, "identif");
 
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
-                InsertImagesIntoPDF(/*PathSaveTo + "temp"*/finalpath + ".pdf", finalpath + ".pdf", ((sign != null && sign != 0) ? sign : null) , ((identif != null && identif != 0) ? identif : null));
+                InsertImagesIntoPDF(/*PathSaveTo + "temp"*/finalpath + ".pdf", finalpath + ".pdf", ((sign != null ) ? sign : null) , ((identif != null) ? identif : null));
 
                 DoMail(finalpath + ".pdf",itemDbOutput.MSIDN);
             }
