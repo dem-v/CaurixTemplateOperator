@@ -66,6 +66,7 @@ namespace CaurixTemplateOperator
                     StatusLbl.Text = "Cancelled.";
                     StopBtn.Enabled = false;
                     StartBtn.Enabled = true;
+                    SettingsStartBtn.Enabled = true;
                 }
 
                 if (args.Error != null)
@@ -74,6 +75,7 @@ namespace CaurixTemplateOperator
                     StatusLbl.Text = "Error: " + args.Error.Message;
                     StopBtn.Enabled = false;
                     StartBtn.Enabled = true;
+                    SettingsStartBtn.Enabled = true;
                 }
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": BW: Completed thread.");
                 return;
@@ -97,6 +99,7 @@ namespace CaurixTemplateOperator
                 IsRunning = false;
                 StopBtn.Enabled = false;
                 StartBtn.Enabled = true;
+                SettingsStartBtn.Enabled = true;
                 PushToLabel("Cancelled");
                 return;
             }
@@ -197,6 +200,7 @@ namespace CaurixTemplateOperator
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Stop Button click");
             StopBtn.Enabled = false;
             StartBtn.Enabled = true;
+            SettingsStartBtn.Enabled = true;
             StopScheduler();
         }
 
@@ -207,6 +211,7 @@ namespace CaurixTemplateOperator
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Start Button click");
             StopBtn.Enabled = true;
             StartBtn.Enabled = false;
+            SettingsStartBtn.Enabled = false;
             InvokerRunner(DateTime.Now);
         }
 

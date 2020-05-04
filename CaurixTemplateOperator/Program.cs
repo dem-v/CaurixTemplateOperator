@@ -59,6 +59,7 @@ namespace CaurixTemplateOperator
 
         public static void ConnectDb()
         {
+            DbList.Clear();
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Trying to connect to DB...");
             try
             {
@@ -131,12 +132,15 @@ namespace CaurixTemplateOperator
 
             if (DisableLoadingPicturesFromEmail == true) return 0;
 
-            foreach (Outlook.Account a in OutlookApp.Session.Accounts)
+            foreach (var account in OutlookApp.Session.Accounts)
+            {
+                var a = (Outlook.Account) account;
                 if (a.DisplayName == CaurixTemplate.Default.EmailSender)
                 {
                     thisAccount = a;
                     break;
                 }
+            }
 
             if (thisAccount == null)
             {
@@ -154,7 +158,7 @@ namespace CaurixTemplateOperator
                     catch (System.Exception e)
                     {
                         var res = MessageBox.Show(
-                            "Running settings form was unsuccessful and cause error " + e.Message +
+                            "Running settings form was unsuccessful and caused error " + e.Message +
                             "\n\rWould you like to continue without loading pictures?", "Error",
                             MessageBoxButtons.YesNo);
                         switch (res)
@@ -177,10 +181,12 @@ namespace CaurixTemplateOperator
                 }
             }
 
-            Outlook.Folder inboxFolder = null;
-            foreach (Outlook.Folder sessionFolder in thisAccount.Session.Folders)
+            Outlook.MAPIFolder inboxFolder = null;
+            var accFolder = thisAccount.Session.Folders.GetFirst() /*as Outlook.Folder;*/;
+            foreach (var sessionFolder in accFolder.Folders)
             {
-                if (sessionFolder.Name.Contains("inbox")) {
+                var sn = sessionFolder.Name.ToLowerInvariant();
+                if (sn.Contains("inbox") || sn.Contains("входящие")) {
                     inboxFolder = sessionFolder;
                     break;
                 }
@@ -190,28 +196,34 @@ namespace CaurixTemplateOperator
             var criteria = "@SQL=\"urn:schemas:httpmail:subject\" like '%" + number + "%'";
             if (inboxFolder.Items.Restrict(criteria).Count == 0) return 0;
 
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Mail: Reading mails for attachments");
             //List<Outlook.MailItem> mailItems = new List<MailItem>();
-            MailItem thisMailItem = null;
-            foreach (MailItem m in inboxFolder.Items.Restrict(criteria))
+            Outlook.MailItem thisMailItem;
+            foreach (Outlook.MailItem m in inboxFolder.Items.Restrict(criteria))
             {
-                if (m.Class == OlObjectClass.olMail)
-                    if (m.Attachments.Count != 0)
-                    { thisMailItem = m;
-                        break;
-                    }
-
-            }
-
-            if (thisMailItem == null) return 0;
-            foreach (Attachment a in thisMailItem.Attachments)
-            {
-                if (a.FileName.Contains(nameKey))
+                thisMailItem = null;
+                //var m = n as MailItem;
+                if (m.Class == Outlook.Enums.OlObjectClass.olMail)
                 {
-                    a.SaveAsFile(PathSaveTo + @"\" + number + nameKey);
-                    return Image.FromFile(PathSaveTo + @"\" + number + nameKey);
+                    if (m.Attachments.Count != 0)
+                    {
+                        thisMailItem = m;
+                        //break;
+                    }
                 }
+
+                if (thisMailItem == null) continue;
+                foreach (Outlook.Attachment a in thisMailItem.Attachments)
+                {
+                    if (a.FileName.Contains(nameKey))
+                    {
+                        a.SaveAsFile(PathSaveTo + @"\" + number + nameKey);
+                        return Image.FromFile(PathSaveTo + @"\" + number + nameKey);
+                    }
+                }
+
             }
-            
+
             return 0;
         }
 
@@ -251,20 +263,29 @@ namespace CaurixTemplateOperator
                     }
                 }
 
+                var findObj2 = WordApp.Selection.Find;
+                findObj2.ClearFormatting();
+                findObj2.Text = "ZZZZZZ";
+                findObj2.Replacement.ClearFormatting();
+                findObj2.Replacement.Text = DateTime.Now.ToString("dd-MM-yy");
+
+                object replAll = Word.WdReplace.wdReplaceAll;
+                findObj2.Execute(Replace: ref replAll);
+
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting to PDF");
                 var finalpath = PathSaveTo + /*"export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" +*/ itemDbOutput.MSIDN;
                 wdoc.ExportAsFixedFormat(/*PathSaveTo + "temp"*/finalpath,Word.WdExportFormat.wdExportFormatPDF,false);
                 wdoc.Close(SaveChanges: false);
                 
-                Image sign = null;
-                Image identif = null;
-                //Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
-                //InsertImagesIntoPDF(PathSaveTo + "temp",finalpath, LoadImageFromEmail(itemDbOutput.MSIDN,"signature"), LoadImageFromEmail(itemDbOutput.MSIDN,"identif"));
+                var sign = LoadImageFromEmail(itemDbOutput.MSIDN, "signature");
+                var identif = LoadImageFromEmail(itemDbOutput.MSIDN, "identif");
+
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
+                InsertImagesIntoPDF(/*PathSaveTo + "temp"*/finalpath + ".pdf", finalpath + ".pdf", ((sign != null && sign != 0) ? sign : null) , ((identif != null && identif != 0) ? identif : null));
 
                 DoMail(finalpath + ".pdf",itemDbOutput.MSIDN);
             }
-
-            
+            WordApp.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
         }
 
         public static void DoMail(string filepath, string msidn)
@@ -330,18 +351,22 @@ namespace CaurixTemplateOperator
         public static void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
         {
 
-            using (Stream inputPdfStream = new FileStream(pdfInput, FileMode.Open, FileAccess.Read, FileShare.Read))
+            File.Move(pdfInput, pdfInput + "_temp" + ".pdf");
+            var f = File.Exists(pdfInput + "_temp" + ".pdf") ? File.Open(pdfInput + "_temp" + ".pdf",FileMode.Open, FileAccess.Read,FileShare.Read) : null;
+
+            using (Stream inputPdfStream = f)
             //using (Stream inputImageStream =   new FileStream("some_image.jpg", FileMode.Open, FileAccess.Read, FileShare.Read))
             using (Stream outputPdfStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 var reader = new PdfReader(inputPdfStream);
                 var stamper = new PdfStamper(reader, outputPdfStream);
                 var pdfContentByte = stamper.GetOverContent(1);
+                iTextSharp.text.Rectangle r = reader.GetPageSize(1);
 
                 if (signature != null)
                 {
                     iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(signature, color:null);
-                    image.SetAbsolutePosition(159, 753);
+                    image.SetAbsolutePosition((float)(r.Width * 0.190), (float)(r.Height * 0.242));
                     image.ScaleToFit(120f, 250f);
                     pdfContentByte.AddImage(image);
                     //159,733    //120px horiz * 250px vert  345,662.5  168px * 250px
@@ -351,7 +376,7 @@ namespace CaurixTemplateOperator
                 if (identif != null)
                 {
                     iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(identif, color: null);
-                    image.SetAbsolutePosition(345, 663);
+                    image.SetAbsolutePosition((float)(r.Width * 0.5), (float)(r.Height * 0.242));
                     image.ScaleToFit(168f,250f);
                     pdfContentByte.AddImage(image);
                 }
@@ -359,6 +384,7 @@ namespace CaurixTemplateOperator
                 stamper.Close();
             }
             
+            if (File.Exists(pdfInput + "_temp" + ".pdf")) { File.Delete(pdfInput + "_temp" + ".pdf");}
         }
 
         
@@ -397,7 +423,7 @@ namespace CaurixTemplateOperator
             return new[]
             {
                 Id.ToString(), Source, Gender, Prenom, Nom, MSIDN, NationalIDN,
-                Date_Naissance.Value.ToString("dd\\MM\\yyyy"), adresse, Quartier, Ville, Place_of_Birth, email
+                (Date_Naissance == null ? "" : Date_Naissance.Value.ToString("dd\\MM\\yyyy")), adresse, Quartier, Ville, Place_of_Birth, email
             };
         }
 

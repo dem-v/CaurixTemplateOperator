@@ -47,6 +47,10 @@
       <Project>{3FED9D81-526A-442D-992D-3F23E8AC619F}</Project>
       <Name>CaurixTemplateOperator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\updOutlookRegValues\updOutlookRegValues.csproj">
+      <Project>{1a80f8b6-c0f5-4ec0-af06-258d5b4dee00}</Project>
+      <Name>updOutlookRegValues</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ProgramTest.cs" />
