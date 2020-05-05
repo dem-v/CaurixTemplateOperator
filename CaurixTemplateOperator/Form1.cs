@@ -142,23 +142,31 @@ namespace CaurixTemplateOperator
             background.RunWorkerAsync();*/
 
             //var ttt = String.Empty;
-            /*Thread t = new Thread((ThreadStart)(() =>
-            {
-                
-            }));
+            Thread t = new Thread((ThreadStart)(delegate { FolderBrowserAsync(); }));
             t.Name = "ddd";
             t.SetApartmentState(ApartmentState.STA);
             t.Start();
-            //t.Join();*/
+            //t.Join();
 
-            FolderBrowserAsync();
+            //FolderBrowserAsync();
 
-            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": got SaveTo path...");
-            
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": FolderBrowserDialog is called");
+            /*using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.ShowNewFolderButton = true;
+                ttt = "";
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    ttt = dialog.SelectedPath;
+                }
+            }
+
+            CaurixTemplate.Default.PathSaveTo = ttt + "\\";
+            CaurixTemplate.Default.Save();*/
+
             //PathSaveToText.Text = CaurixTemplate.Default.PathSaveTo;
         }
 
-        [STAThread]
         public void FolderBrowserAsync()
         {
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": FolderBrowserDialog is called");
@@ -171,7 +179,9 @@ namespace CaurixTemplateOperator
                 ttt = folderBrowserDialog1.SelectedPath;
                 CaurixTemplate.Default.PathSaveTo = ttt + "\\";
                 CaurixTemplate.Default.Save();
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": got SaveTo path...");
             }
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Call completed");
         }
 
         public void InvokerRunner(DateTime nextTime)

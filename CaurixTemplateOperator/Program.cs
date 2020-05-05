@@ -233,6 +233,11 @@ namespace CaurixTemplateOperator
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting files");
             var WordApp = new Word.Application{Visible = false};
             WordTemplatePath = CaurixTemplate.Default.TemplatePath;
+            if (WordTemplatePath.ToString() == string.Empty || WordTemplatePath == null)
+            {
+                WordTemplatePath = Path.Combine(Application.StartupPath, "\\Template.docx");
+                CaurixTemplate.Default.TemplatePath = WordTemplatePath.ToString();
+            }
 
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Word is ready. Files to export " + DbList.Count);
             foreach (var itemDbOutput in DbList)
@@ -489,7 +494,12 @@ namespace CaurixTemplateOperator
         {
             writerAsync.DoWork += WriterAsync_DoWork;
             timerWorker.DoWork += delegate(object sender, DoWorkEventArgs args) {Thread.Sleep(1000);};
-            timerWorker.RunWorkerCompleted += delegate(object sender, RunWorkerCompletedEventArgs args) {  if (pendingList.Count>0) {writerAsync.RunWorkerAsync(string.Join("\n\r", pendingList)); pendingList.Clear();}};
+            timerWorker.RunWorkerCompleted += delegate(object sender, RunWorkerCompletedEventArgs args) {
+                if (pendingList.Count > 0)
+                {
+                    writerAsync.RunWorkerAsync(string.Join("\n\r", pendingList.Count>0 ? pendingList : new List<string>()));
+                    pendingList.Clear();
+                }};
         }
 
         public void AddMessage(string m)
