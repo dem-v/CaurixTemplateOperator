@@ -189,7 +189,7 @@ namespace CaurixTemplateOperator
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Invoker called");
             if (backgroundWorker.IsBusy) backgroundWorker.CancelAsync();
 
-            while (backgroundWorker.CancellationPending) Thread.Sleep(1000);
+            while (backgroundWorker.CancellationPending && backgroundWorker.IsBusy) Thread.Sleep(1000);
 
             backgroundWorker.RunWorkerAsync(nextTime);
 //            Thread.CurrentThread.Abort();
@@ -234,7 +234,7 @@ namespace CaurixTemplateOperator
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": SCHEDULER: Stop command issued");
             StatusLbl.Text = "Cancelling...";
             
-            backgroundWorker.CancelAsync();
+            backgroundWorker.CancelAsync(); 
             //Environment.Exit(0);
         }
 
@@ -242,8 +242,8 @@ namespace CaurixTemplateOperator
         {
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Stop Button click");
             StopBtn.Enabled = false;
-            StartBtn.Enabled = true;
-            SettingsStartBtn.Enabled = true;
+            /*StartBtn.Enabled = true;
+            SettingsStartBtn.Enabled = true;*/
             StopScheduler();
         }
 

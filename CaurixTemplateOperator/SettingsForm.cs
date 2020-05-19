@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 //using Outlook = Microsoft.Office.Interop.Outlook;
 using Outlook = NetOffice.OutlookApi;
 
@@ -39,6 +40,7 @@ namespace CaurixTemplateOperator
             TimeDeferEmailText.Text = CaurixTemplate.Default.TimeToDeferEmail.ToString();
             ListOfIdsToSkipText.Text = CaurixTemplate.Default.IdsToSkip;
             DisableLoadingImagesCheckBox.Checked = CaurixTemplate.Default.DisableLoadingImagesFromEmail;
+            ReplacementDictionaryText.Text = CaurixTemplate.Default.ReplacementJson;
             Show();
         }
 

@@ -36,7 +36,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="ReplacementJson" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">{"elem":[{"key":"Prenom","value":"PPPPPP"},{"key":"Nom","value":"NNNNNN"},{"key":"MSIDN","value":"TTTTTT"},{"key":"NationalIDN","value":"IIIIII"},{"key":"Date_Naissance","value":"DDDDDD"},{"key":"adresse","value":"AAAAAA"},{"key":"Ville","value":"VVVVVV"},{"key":"Place_of_Birth","value":"LLLLLL"},{"key":"email","value":"EEEEEE"}]}</Value>
     </Setting>
     <Setting Name="PathSaveTo" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
