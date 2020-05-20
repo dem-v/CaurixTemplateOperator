@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 //using MySql.Data.MySqlClient;
 using System.Data.Odbc;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -366,13 +367,31 @@ namespace CaurixTemplateOperator
         {
             if (pdfInput == pdfOutput)
             {
-                pdfOutput += new DateTime().ToString("O") + ".pdf";
-
+                pdfOutput += DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss") + ".pdf";
+                File.Copy(pdfInput, pdfOutput);
             }
 
+            try
+            {
+                PdfReader reader2 = new PdfReader(pdfInput);
+                PdfDocument pdfDocument2 = new PdfDocument(); // (reader, writer);
+            }
+            catch (System.Exception e)
+            {
+                Debug.Print(e.StackTrace);
+                throw;
+            }
+            //PdfReader reader = new PdfReader(pdfInput);
+
             PdfReader reader = new PdfReader(pdfInput);
+            
+            Debug.Print("" + reader.GetType() + reader.GetFileLength());
+
             PdfWriter writer = new PdfWriter(pdfOutput);
-            PdfDocument pdfDocument = new PdfDocument(reader, writer);
+            Debug.Print("Can write - " + writer.CanWrite + "; Is close stream " + writer.IsCloseStream());
+            writer.Write(0);
+
+            PdfDocument pdfDocument = new PdfDocument(reader, writer); // (reader, writer);
             Rectangle crop = pdfDocument.GetPage(1).GetCropBox();
 
             if (signature != null)
