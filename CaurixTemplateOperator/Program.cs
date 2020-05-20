@@ -357,43 +357,59 @@ namespace CaurixTemplateOperator
 
         public static void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
         {
-
-            File.Move(pdfInput, pdfInput + "_temp" + ".pdf");
-            var f = File.Exists(pdfInput + "_temp" + ".pdf") ? File.Open(pdfInput + "_temp" + ".pdf",FileMode.Open, FileAccess.Read,FileShare.Read) : null;
-
-            using (Stream inputPdfStream = f)
-            //using (Stream inputImageStream =   new FileStream("some_image.jpg", FileMode.Open, FileAccess.Read, FileShare.Read))
+            if (pdfInput == pdfOutput)
             {
-                using (Stream outputPdfStream =
-                    new FileStream(pdfOutput, FileMode.Append, FileAccess.ReadWrite, FileShare.None))
-                {
-                    var reader = new PdfReader(inputPdfStream);
-                    var stamper = new PdfStamper(reader, outputPdfStream);
-                    var pdfContentByte = stamper.GetOverContent(1);
-                    iTextSharp.text.Rectangle r = reader.GetPageSize(1);
+                pdfOutput += new DateTime().ToString("O") + ".pdf";
 
-
-                    if (signature != null)
-                    {
-                        iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(signature, color: null);
-                        image.SetAbsolutePosition((float) (r.Width * 0.190), (float) (r.Height * 0.242));
-                        image.ScaleToFit(120f, 250f);
-                        pdfContentByte.AddImage(image);
-                        //159,733    //120px horiz * 250px vert  345,662.5  168px * 250px
-
-                    }
-
-                    if (identif != null)
-                    {
-                        iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(identif, color: null);
-                        image.SetAbsolutePosition((float) (r.Width * 0.5), (float) (r.Height * 0.242));
-                        image.ScaleToFit(168f, 250f);
-                        pdfContentByte.AddImage(image);
-                    }
-
-                    stamper.Close();
-                }
             }
+
+            iTextSharp.text.Document document = new iTextSharp.text.Document();
+            Stream outputStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write);
+            PdfWriter pdfWriter = PdfWriter.GetInstance(document,outputStream);
+            document.Open();
+
+            var reader = new PdfReader(pdfInput);
+
+            var stamper = new PdfStamper(reader,pdfWriter);
+
+
+            //File.Move(pdfInput, pdfInput + "_temp" + ".pdf");
+            //var f = File.Exists(pdfInput + "_temp" + ".pdf") ? File.Open(pdfInput + "_temp" + ".pdf",FileMode.Open, FileAccess.Read,FileShare.Read) : null;
+
+            //using (Stream inputPdfStream = f)
+            ////using (Stream inputImageStream =   new FileStream("some_image.jpg", FileMode.Open, FileAccess.Read, FileShare.Read))
+            //{
+            //    using (Stream outputPdfStream =
+            //        new FileStream(pdfOutput, FileMode.Append, FileAccess.ReadWrite, FileShare.None))
+            //    {
+            //        var reader = new PdfReader(inputPdfStream);
+            //        var stamper = new PdfStamper(reader, outputPdfStream);
+
+            var pdfContentByte = stamper.GetOverContent(1);
+            iTextSharp.text.Rectangle r = reader.GetPageSize(1);
+
+
+            if (signature != null)
+            {
+                iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(signature, color: null);
+                image.SetAbsolutePosition((float) (r.Width * 0.190), (float) (r.Height * 0.242));
+                image.ScaleToFit(120f, 250f);
+                pdfContentByte.AddImage(image);
+                //159,733    //120px horiz * 250px vert  345,662.5  168px * 250px
+
+            }
+
+            if (identif != null)
+            {
+                iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(identif, color: null);
+                image.SetAbsolutePosition((float) (r.Width * 0.5), (float) (r.Height * 0.242));
+                image.ScaleToFit(168f, 250f);
+                pdfContentByte.AddImage(image);
+            }
+
+            stamper.Close();
+               // }
+            //}
             
             if (File.Exists(pdfInput + "_temp" + ".pdf")) { File.Delete(pdfInput + "_temp" + ".pdf");}
         }
