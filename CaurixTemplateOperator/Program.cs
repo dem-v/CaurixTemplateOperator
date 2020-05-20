@@ -12,13 +12,20 @@ using System.Data.Odbc;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using iText.IO.Image;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas;
+using iText.Kernel.Pdf.Canvas.Wmf;
+using iText.Kernel.Pdf.Xobject;
+using iText.Layout;
 using Microsoft.Office.Interop.Outlook;
 using Newtonsoft.Json;
 using Application = System.Windows.Forms.Application;
 using Word = Microsoft.Office.Interop.Word;
 using Outlook = NetOffice.OutlookApi;
-using iTextSharp.text.pdf;
+//using iTextSharp.text.pdf;
 using OlItemType = NetOffice.OutlookApi.Enums.OlItemType;
+using Rectangle = iText.Kernel.Geom.Rectangle;
 using Timer = System.Threading.Timer;
 
 namespace CaurixTemplateOperator
@@ -363,35 +370,51 @@ namespace CaurixTemplateOperator
 
             }
 
-            iTextSharp.text.Document document = new iTextSharp.text.Document();
-            Stream outputStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write);
-            PdfWriter pdfWriter = PdfWriter.GetInstance(document,outputStream);
-            document.Open();
+            PdfReader reader = new PdfReader(pdfInput);
+            PdfWriter writer = new PdfWriter(pdfOutput);
+            PdfDocument pdfDocument = new PdfDocument(reader, writer);
+            Rectangle crop = pdfDocument.GetPage(1).GetCropBox();
 
-            var reader = new PdfReader(pdfInput);
+            if (signature != null)
+            {
+                ImageData signaImageD = signature != null ? ImageDataFactory.Create(signature, color: null) : null;
+                iText.Layout.Element.Image signa = new iText.Layout.Element.Image(signaImageD);
+                signa.ScaleToFit(120f, 250f);
+                signa.SetFixedPosition((float) (crop.GetWidth() * 0.190), (float) (crop.GetHeight() * 0.242));
+                Rectangle locA = new Rectangle((float)(crop.GetWidth() * 0.190), (float)(crop.GetHeight() * 0.242));
+                PdfFormXObject xObjectA = new PdfFormXObject(locA);
+                PdfCanvas pdfCanvas = new PdfCanvas(xObjectA,pdfDocument);
+                Canvas canvas = new Canvas(pdfCanvas,pdfDocument,crop);
+                canvas.Add(signa);
+            }
 
-            var stamper = new PdfStamper(reader,pdfWriter);
+            if (identif != null)
+            {
+                ImageData identImage = identif != null ? ImageDataFactory.Create(identif, color: null) : null;
+                iText.Layout.Element.Image ident = new iText.Layout.Element.Image(identImage);
+                ident.ScaleToFit(168f, 250f);
+                ident.SetFixedPosition((float)(crop.GetWidth() * 0.5), (float)(crop.GetHeight() * 0.242));
+                Rectangle locB = new Rectangle((float)(crop.GetWidth() * 0.5), (float)(crop.GetHeight() * 0.242));
+                PdfFormXObject xObjectB = new PdfFormXObject(locB);
+                PdfCanvas pdfCanvas = new PdfCanvas(xObjectB, pdfDocument);
+                Canvas canvas = new Canvas(pdfCanvas, pdfDocument, crop);
+                canvas.Add(ident);
+            }
+
+            pdfDocument.Close();
+            if (reader != null) {reader.Close();}
+            if (writer != null) {writer.Close();}
+            
+            
 
 
-            //File.Move(pdfInput, pdfInput + "_temp" + ".pdf");
-            //var f = File.Exists(pdfInput + "_temp" + ".pdf") ? File.Open(pdfInput + "_temp" + ".pdf",FileMode.Open, FileAccess.Read,FileShare.Read) : null;
-
-            //using (Stream inputPdfStream = f)
-            ////using (Stream inputImageStream =   new FileStream("some_image.jpg", FileMode.Open, FileAccess.Read, FileShare.Read))
-            //{
-            //    using (Stream outputPdfStream =
-            //        new FileStream(pdfOutput, FileMode.Append, FileAccess.ReadWrite, FileShare.None))
-            //    {
-            //        var reader = new PdfReader(inputPdfStream);
-            //        var stamper = new PdfStamper(reader, outputPdfStream);
-
-            var pdfContentByte = stamper.GetOverContent(1);
+            /*var pdfContentByte = stamper.GetOverContent(1);
             iTextSharp.text.Rectangle r = reader.GetPageSize(1);
 
 
             if (signature != null)
             {
-                iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(signature, color: null);
+             
                 image.SetAbsolutePosition((float) (r.Width * 0.190), (float) (r.Height * 0.242));
                 image.ScaleToFit(120f, 250f);
                 pdfContentByte.AddImage(image);
@@ -407,11 +430,35 @@ namespace CaurixTemplateOperator
                 pdfContentByte.AddImage(image);
             }
 
-            stamper.Close();
-               // }
+            stamper.Close();*/
+
+            if (File.Exists(pdfInput + "_temp" + ".pdf")) { File.Delete(pdfInput + "_temp" + ".pdf"); }
+
+            /*Document document = new Document();
+            Stream outputStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write);
+            PdfWriter pdfWriter = PdfWriter.GetInstance(document,outputStream);
+            document.Open();
+
+            var reader = new PdfReader(pdfInput);*/
+
+            ////var stamper = new PdfStamper(reader,pdfWriter);
+
+
+            //File.Move(pdfInput, pdfInput + "_temp" + ".pdf");
+            //var f = File.Exists(pdfInput + "_temp" + ".pdf") ? File.Open(pdfInput + "_temp" + ".pdf",FileMode.Open, FileAccess.Read,FileShare.Read) : null;
+
+            //using (Stream inputPdfStream = f)
+            ////using (Stream inputImageStream =   new FileStream("some_image.jpg", FileMode.Open, FileAccess.Read, FileShare.Read))
+            //{
+            //    using (Stream outputPdfStream =
+            //        new FileStream(pdfOutput, FileMode.Append, FileAccess.ReadWrite, FileShare.None))
+            //    {
+            //        var reader = new PdfReader(inputPdfStream);
+            //        var stamper = new PdfStamper(reader, outputPdfStream);
+            // }
             //}
-            
-            if (File.Exists(pdfInput + "_temp" + ".pdf")) { File.Delete(pdfInput + "_temp" + ".pdf");}
+
+
         }
 
         
