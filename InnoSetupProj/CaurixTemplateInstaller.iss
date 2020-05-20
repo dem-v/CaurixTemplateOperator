@@ -96,8 +96,8 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\Lib\mysql-connector-odbc-5.3.14-win32.msi"; Description: "Updates for ODBC Driver"; StatusMsg: "Updating ODBC Driver"; Flags: shellexec nowait waituntilterminated    
-Filename: "{app}\Lib\mysql-connector-odbc-5.3.14-winx64.msi"; Description: "Updates for ODBC Driver"; StatusMsg: "Updating ODBC Driver"; Flags: shellexec nowait waituntilterminated; Check: IsWin64
+Filename: "{app}\Lib\mysql-connector-odbc-5.3.14-win32.msi"; Description: "Updates for ODBC Driver"; StatusMsg: "Updating ODBC Driver"; Flags: shellexec waituntilterminated    
+Filename: "{app}\Lib\mysql-connector-odbc-5.3.14-winx64.msi"; Description: "Updates for ODBC Driver"; StatusMsg: "Updating ODBC Driver"; Flags: shellexec waituntilterminated; Check: IsWin64
 Filename: "{app}\Lib\NDP461-KB3102438-Web.exe"; Description: "Updates for .Net Framework"; StatusMsg: "Updating .Net Framework"; Flags: waituntilterminated
 Filename: "{app}\updOutlookRegValues.exe"; Description: "Registry update for Outlook"; StatusMsg: "Updating Outlook settings"; Flags: waituntilterminated
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

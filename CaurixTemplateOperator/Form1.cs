@@ -13,7 +13,7 @@ namespace CaurixTemplateOperator
 {
     public partial class Form1 : Form
     {
-        public bool IsRunning = false;
+        public bool IsRunning;
         //internal Thread thread;
         //internal Thread invokerThread;
         private BackgroundWorker backgroundWorker;
@@ -27,12 +27,15 @@ namespace CaurixTemplateOperator
             InitializeComponent();
 
             CaurixTemplate.Default.TemplatePath = Application.StartupPath + "\\Template.docx";
+            Logger.Push("test",CaurixTemplate.Default.TemplatePath);
 
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(),": Starting main window...");
             schedulerWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
             schedulerWorker.DoWork += delegate (object sender, DoWorkEventArgs args) {
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": SCHEDULER: Starting scheduler...");
                 StartScheduler();
+
+                Logger.Push("test","Scheduler ended");
                 return;
             };
             schedulerWorker.RunWorkerCompleted += swWorkCompleted;
@@ -61,7 +64,9 @@ namespace CaurixTemplateOperator
             backgroundWorker.ProgressChanged += delegate { schedulerWorker.RunWorkerAsync(); };
             backgroundWorker.RunWorkerCompleted += delegate(object sender, RunWorkerCompletedEventArgs args)
             {
-                if (args.Cancelled || backgroundWorker.CancellationPending)
+                Logger.Push("test","Background worker completed call Start:" + StartBtn.Enabled + " Stop:" + StopBtn.Enabled + " Settings:" + SettingsStartBtn.Enabled + " Cancelled/Pending/Error: " + args.Cancelled + "/" + backgroundWorker.CancellationPending + "/" + args.Error);
+
+                if (args.Cancelled || backgroundWorker.CancellationPending || !IsRunning)
                 {
                     Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": BW: Cancelled");
                     StatusLbl.Text = "Cancelled.";
@@ -85,6 +90,7 @@ namespace CaurixTemplateOperator
 
         private void swWorkCompleted(object sender, RunWorkerCompletedEventArgs args)
         {
+            Logger.Push("test", "Scheduler worker completed call Start:" + StartBtn.Enabled + " Stop:" + StopBtn.Enabled + " Settings:" + SettingsStartBtn.Enabled + " Cancelled/Pending/Error: " + args.Cancelled + "/" + backgroundWorker.CancellationPending + "/" + args.Error);
             if (args.Error != null)
             {
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": SCHEDULER: Error in thread " + args.Error.Source + args.Error.Message);
@@ -107,6 +113,8 @@ namespace CaurixTemplateOperator
 
             var StartTime = DateTime.Now;
             var NextTime = StartTime.AddSeconds((double)CaurixTemplate.Default.TimeToRestart);
+            Logger.Push("test", "Time: " + StartTime + "/" + NextTime);
+
             StatusLbl.Text = NextTime.ToString("U");
 
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": SCHEDULER: Calling for another scheduler at time " + NextTime.ToString("U"));
@@ -228,18 +236,22 @@ namespace CaurixTemplateOperator
 
         public void StopScheduler()
         {
+            Logger.Push("test", "StopScheduler Start:" + StartBtn.Enabled + " Stop:" + StopBtn.Enabled + " Settings:" + SettingsStartBtn.Enabled);
             //invokerThread.Abort();
             //thread.Join(5000);
             //thread.Abort();
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": SCHEDULER: Stop command issued");
             StatusLbl.Text = "Cancelling...";
-            
+
+            IsRunning = false;
+
             backgroundWorker.CancelAsync(); 
             //Environment.Exit(0);
         }
 
         private void StopBtn_Click(object sender, EventArgs e)
         {
+            Logger.Push("test", "StopBtn click Start:" + StartBtn.Enabled + " Stop:" + StopBtn.Enabled + " Settings:" + SettingsStartBtn.Enabled);
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Stop Button click");
             StopBtn.Enabled = false;
             /*StartBtn.Enabled = true;
@@ -249,9 +261,13 @@ namespace CaurixTemplateOperator
 
         private void StartBtn_Click(object sender, EventArgs e)
         {
+            Logger.Push("test", "StartBtn click Start:" + StartBtn.Enabled + " Stop:" + StopBtn.Enabled + " Settings:" + SettingsStartBtn.Enabled);
             //InvokerRunner(DateTime.Now);
             //invokerThread = new Thread((() => InvokerRunner(DateTime.Now))) {IsBackground = true,Name = "invokerunnerthread"};
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Start Button click");
+
+            IsRunning = true;
+
             StopBtn.Enabled = true;
             StartBtn.Enabled = false;
             SettingsStartBtn.Enabled = false;

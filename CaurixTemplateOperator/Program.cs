@@ -286,7 +286,9 @@ namespace CaurixTemplateOperator
                 var identif = LoadImageFromEmail(itemDbOutput.MSIDN, "identif");
 
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
-                InsertImagesIntoPDF(/*PathSaveTo + "temp"*/finalpath + ".pdf", finalpath + ".pdf", ((sign != null ) ? sign : null) , ((identif != null) ? identif : null));
+                Logger.Push("test", "signature: " + sign.GetType() + " identif: " + identif.GetType());
+
+                InsertImagesIntoPDF(/*PathSaveTo + "temp"*/finalpath + ".pdf", finalpath + ".pdf", ((sign != null) ? (sign is int ? null : sign) : null) , ((identif != null) ? (identif is int ? null : identif) : null));
 
                 DoMail(finalpath + ".pdf",itemDbOutput.MSIDN);
             }
@@ -361,32 +363,35 @@ namespace CaurixTemplateOperator
 
             using (Stream inputPdfStream = f)
             //using (Stream inputImageStream =   new FileStream("some_image.jpg", FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (Stream outputPdfStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                var reader = new PdfReader(inputPdfStream);
-                var stamper = new PdfStamper(reader, outputPdfStream);
-                var pdfContentByte = stamper.GetOverContent(1);
-                iTextSharp.text.Rectangle r = reader.GetPageSize(1);
-
-                if (signature != null)
+                using (Stream outputPdfStream =
+                    new FileStream(pdfOutput, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(signature, color:null);
-                    image.SetAbsolutePosition((float)(r.Width * 0.190), (float)(r.Height * 0.242));
-                    image.ScaleToFit(120f, 250f);
-                    pdfContentByte.AddImage(image);
-                    //159,733    //120px horiz * 250px vert  345,662.5  168px * 250px
-                         
-                }
+                    var reader = new PdfReader(inputPdfStream);
+                    var stamper = new PdfStamper(reader, outputPdfStream);
+                    var pdfContentByte = stamper.GetOverContent(1);
+                    iTextSharp.text.Rectangle r = reader.GetPageSize(1);
 
-                if (identif != null)
-                {
-                    iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(identif, color: null);
-                    image.SetAbsolutePosition((float)(r.Width * 0.5), (float)(r.Height * 0.242));
-                    image.ScaleToFit(168f,250f);
-                    pdfContentByte.AddImage(image);
+                    if (signature != null)
+                    {
+                        iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(signature, color: null);
+                        image.SetAbsolutePosition((float) (r.Width * 0.190), (float) (r.Height * 0.242));
+                        image.ScaleToFit(120f, 250f);
+                        pdfContentByte.AddImage(image);
+                        //159,733    //120px horiz * 250px vert  345,662.5  168px * 250px
+
+                    }
+
+                    if (identif != null)
+                    {
+                        iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(identif, color: null);
+                        image.SetAbsolutePosition((float) (r.Width * 0.5), (float) (r.Height * 0.242));
+                        image.ScaleToFit(168f, 250f);
+                        pdfContentByte.AddImage(image);
+                    }
+
+                    stamper.Close();
                 }
-                
-                stamper.Close();
             }
             
             if (File.Exists(pdfInput + "_temp" + ".pdf")) { File.Delete(pdfInput + "_temp" + ".pdf");}
