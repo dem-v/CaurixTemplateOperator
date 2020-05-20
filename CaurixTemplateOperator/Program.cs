@@ -286,7 +286,7 @@ namespace CaurixTemplateOperator
                 var identif = LoadImageFromEmail(itemDbOutput.MSIDN, "identif");
 
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
-                Logger.Push("test", "signature: " + sign.GetType() + " identif: " + identif.GetType());
+                Logger.Push("test", "signature: " + (sign != null ? sign.GetType() : null) + " identif: " + (identif != null ? identif.GetType() : null));
 
                 InsertImagesIntoPDF(/*PathSaveTo + "temp"*/finalpath + ".pdf", finalpath + ".pdf", ((sign != null) ? (sign is int ? null : sign) : null) , ((identif != null) ? (identif is int ? null : identif) : null));
 
@@ -365,12 +365,13 @@ namespace CaurixTemplateOperator
             //using (Stream inputImageStream =   new FileStream("some_image.jpg", FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 using (Stream outputPdfStream =
-                    new FileStream(pdfOutput, FileMode.Create, FileAccess.Write, FileShare.None))
+                    new FileStream(pdfOutput, FileMode.Append, FileAccess.ReadWrite, FileShare.None))
                 {
                     var reader = new PdfReader(inputPdfStream);
                     var stamper = new PdfStamper(reader, outputPdfStream);
                     var pdfContentByte = stamper.GetOverContent(1);
                     iTextSharp.text.Rectangle r = reader.GetPageSize(1);
+
 
                     if (signature != null)
                     {
