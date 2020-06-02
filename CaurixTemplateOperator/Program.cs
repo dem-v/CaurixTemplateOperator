@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 //using MySql.Data.MySqlClient;
 using System.Data.Odbc;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -18,12 +19,17 @@ using Application = System.Windows.Forms.Application;
 using Word = Microsoft.Office.Interop.Word;
 using Outlook = NetOffice.OutlookApi;
 using iTextSharp.text.pdf;
+using Microsoft.Office.Core;
+using NetOffice.VBIDEApi;
 using OlItemType = NetOffice.OutlookApi.Enums.OlItemType;
 using Timer = System.Threading.Timer;
+using Exception = System.Exception;
+using System.Net;
+using System.Net.Mail;
 
 namespace CaurixTemplateOperator
 {
-     static class Program
+     public static class Program
     {
         internal static OdbcConnection OdbcConn;
         internal static OdbcCommand Command = new OdbcCommand();
@@ -57,6 +63,14 @@ namespace CaurixTemplateOperator
             //ExportFiles();
         }
 
+        public static Dictionary<string, string> GetFieldsFromDBRecord(ref OdbcDataReader dataReader)
+        {
+            var o = new Dictionary<string,string>();
+            for (int ordinal = 0; ordinal < dataReader.FieldCount; ordinal++) o.Add(dataReader.GetName(ordinal), dataReader.IsDBNull(ordinal) ? String.Empty : dataReader.GetValue(ordinal).ToString());
+                //Console.WriteLine("Field {0}: {1}", ordinal, data.GetName(ordinal));
+            return o;
+        }
+
         public static void ConnectDb()
         {
             DbList.Clear();
@@ -75,11 +89,14 @@ namespace CaurixTemplateOperator
                 data = Command.ExecuteReader();
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Data received");
 
+
+
                 while (data.Read())
                 {
                     DbOutput item = new DbOutput
                     {
-                        Id = long.Parse(data["id"].ToString()),
+                        EntryValues = GetFieldsFromDBRecord(ref data)
+                        /*Id = long.Parse(data["id"].ToString()),
                         Source = data["Source"].ToString(),
                         Gender = data["Gender"].ToString(),
                         Prenom = data["Prenom"].ToString(),
@@ -91,7 +108,7 @@ namespace CaurixTemplateOperator
                         Quartier = data["Quartier"].ToString(),
                         Ville = data["Ville"].ToString(),
                         Place_of_Birth = data["Place_of_Birth"].ToString(),
-                        email = data["email"].ToString()
+                        email = data["email"].ToString()*/
                     };
                     DbList.Add(item);
                 }
@@ -123,7 +140,7 @@ namespace CaurixTemplateOperator
 
         }
 
-        public static dynamic LoadImageFromEmail(string number, string nameKey)
+        public static string LoadImageFromEmail(string number, string nameKey)
         {
             var OutlookApp = new Outlook.Application();
             Outlook.Account thisAccount = null;
@@ -217,14 +234,17 @@ namespace CaurixTemplateOperator
                 {
                     if (a.FileName.Contains(nameKey))
                     {
-                        a.SaveAsFile(PathSaveTo + @"\" + number + nameKey);
-                        return Image.FromFile(PathSaveTo + @"\" + number + nameKey);
+                        if (!File.Exists(PathSaveTo + @"\" + number + nameKey))
+                        {
+                            a.SaveAsFile(PathSaveTo + @"\" + number + nameKey);
+                        }
+                        return PathSaveTo + @"\" + number + nameKey;
                     }
                 }
 
             }
 
-            return 0;
+            return null;
         }
 
         public static void ExportFiles()
@@ -242,13 +262,27 @@ namespace CaurixTemplateOperator
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Word is ready. Files to export " + DbList.Count);
             foreach (var itemDbOutput in DbList)
             {
-                var check = CheckIfToSkip(itemDbOutput.MSIDN);
+                string MSIDNValue = String.Empty;
+                //string IDValue = String.Empty;
+                try
+                {
+                    MSIDNValue = itemDbOutput.EntryValues["MSIDN"];
+                    //IDValue = itemDbOutput.EntryValues["Id"];
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(
+                        "Important information! MSIDN was not found in the database, some of the functions will be impaired. Please, contact developer.");
+                    Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": ERROR!!!! MSIDN is non existent!");
+                }
+
+                var check = CheckIfToSkip(MSIDNValue);
                 if (check) continue;
 
                 Word.Document wdoc = WordApp.Documents.Open(ref WordTemplatePath, ReadOnly: false, Visible: false);
                 wdoc.Activate();
 
-                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting "+ itemDbOutput.Id);
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting "+ MSIDNValue);
                 var dbstr = itemDbOutput.ConvertToStrings();
                 int cnt = -1;
                 foreach (var s in itemDbOutput.GetListOfStrings())
@@ -277,20 +311,47 @@ namespace CaurixTemplateOperator
                 object replAll = Word.WdReplace.wdReplaceAll;
                 findObj2.Execute(Replace: ref replAll);
 
+                try
+                {
+                    Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
+                    var sign = LoadImageFromEmail(MSIDNValue, "signature");
+                    var identif = LoadImageFromEmail(MSIDNValue, "identif");
+                    
+                    InsertImagesIntoWord(wdoc, ((sign != null) ? sign : null), ((identif != null) ? identif : null));
+                }
+                catch (Exception e)
+                {
+                    Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), e.ToString());
+                    //Console.WriteLine(e);
+                }
+
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting to PDF");
-                var finalpath = PathSaveTo + /*"export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" +*/ itemDbOutput.MSIDN;
+                var finalpath = PathSaveTo + /*"export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" +*/ MSIDNValue;
                 wdoc.ExportAsFixedFormat(/*PathSaveTo + "temp"*/finalpath,Word.WdExportFormat.wdExportFormatPDF,false);
                 wdoc.Close(SaveChanges: false);
                 
-                var sign = LoadImageFromEmail(itemDbOutput.MSIDN, "signature");
-                var identif = LoadImageFromEmail(itemDbOutput.MSIDN, "identif");
+                
 
-                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
-                Logger.Push("test", "signature: " + (sign != null ? sign.GetType() : null) + " identif: " + (identif != null ? identif.GetType() : null));
+                /*try
+                {
+                    InsertImagesIntoPDF(finalpath + ".pdf", finalpath + ".pdf", ((sign != null) ? (sign is int ? null : sign) : null), ((identif != null) ? (identif is int ? null : identif) : null));
+                }
+                catch (Exception e)
+                {
+                    Debug.Print(e.ToString());
+                    //Console.WriteLine(e);
+                }*/
 
-                InsertImagesIntoPDF(/*PathSaveTo + "temp"*/finalpath + ".pdf", finalpath + ".pdf", ((sign != null) ? (sign is int ? null : sign) : null) , ((identif != null) ? (identif is int ? null : identif) : null));
-
-                DoMail(finalpath + ".pdf",itemDbOutput.MSIDN);
+                try
+                {
+                    DoMail(finalpath + ".pdf", MSIDNValue);
+                }
+                catch (Exception e)
+                {
+                    Debug.Print(e.ToString());
+                    //Console.WriteLine(e);
+                }
+                
             }
             WordApp.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
         }
@@ -299,6 +360,7 @@ namespace CaurixTemplateOperator
         {
             using (var olApp = new Outlook.Application())
             {
+                
                 Outlook.Account thisAccount = null;
                 foreach (var acc in olApp.Session.Accounts)
                 {
@@ -312,6 +374,23 @@ namespace CaurixTemplateOperator
                     Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Mailing: No such email account in outlook");
                     return;
                 }
+
+                MailMessage mail = new MailMessage();
+                SmtpClient SmtpServer = new SmtpClient(thisAccount.SmtpAddress);
+
+                var sender = CaurixTemplate.Default.EmailSender;
+                var reciep = CaurixTemplate.Default.EmailReceiver;
+
+                mail.From = new MailAddress(sender);
+                mail.To.Add((reciep != String.Empty && reciep != null) ? reciep : sender);
+                mail.Subject = "Generated doc for " + msidn;
+                mail.Body = "This email is autogenerated by script.";
+
+                System.Net.Mail.Attachment attachment;
+                attachment = new System.Net.Mail.Attachment(filepath);
+                mail.Attachments.Add(attachment);
+                SmtpServer.Port = 25;
+
 
                 var olMail = olApp.CreateItem(OlItemType.olMailItem) as Outlook.MailItem;
                 olMail.To = CaurixTemplate.Default.EmailReceiver;
@@ -355,22 +434,59 @@ namespace CaurixTemplateOperator
             fff?.PushToStatus(m);
         }
 
+        public static void InsertImagesIntoWord(Word.Document wDocument, string signature = null, string identif = null)
+        {
+            object falseObj = false;
+            object trueObj = true;
+            object start = wDocument.Content.Start;
+            object finish = wDocument.Content.GoTo(Word.WdGoToItem.wdGoToPage, Word.WdGoToDirection.wdGoToNext).Start-1;
+
+            var wdRange = wDocument.Range(start, finish);
+            //Word.InlineShape isSigna = wdRange.InlineShapes.AddPicture(signature, falseObj, trueObj);
+
+            if (signature != null)
+            {
+                Word.Shape shSigna = wDocument.Shapes.AddPicture(signature, falseObj, trueObj, 30, 560);
+                shSigna.ScaleHeight((float) 85 / shSigna.Height, MsoTriState.msoTrue);
+                shSigna.ScaleWidth((float) 180 / shSigna.Width, MsoTriState.msoTrue);
+                shSigna.Line.Visible = MsoTriState.msoFalse;
+                //wdRange.Paste();
+            }
+
+            if (identif != null)
+            {
+                Word.Shape shIdentif = wDocument.Shapes.AddPicture(identif, falseObj, trueObj, 180, 540);
+                shIdentif.ScaleHeight((float) 85 / shIdentif.Height, MsoTriState.msoTrue);
+                shIdentif.ScaleWidth((float) 165 / shIdentif.Width, MsoTriState.msoTrue);
+                shIdentif.Line.Visible = MsoTriState.msoFalse;
+                //wdRange.Paste();
+            }
+
+            //wdRange.Paste();
+
+        }
+
+
         public static void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
         {
             if (pdfInput == pdfOutput)
             {
-                pdfOutput += new DateTime().ToString("O") + ".pdf";
+                pdfOutput += new DateTime().ToString("yyyy-MM-dd-hh-mm-ss") + ".pdf";
 
             }
 
-            iTextSharp.text.Document document = new iTextSharp.text.Document();
-            Stream outputStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write);
-            PdfWriter pdfWriter = PdfWriter.GetInstance(document,outputStream);
-            document.Open();
-
             var reader = new PdfReader(pdfInput);
+            
 
-            var stamper = new PdfStamper(reader,pdfWriter);
+            iTextSharp.text.Document document = new iTextSharp.text.Document(reader.GetPageSize(1));
+            Stream outputStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write);
+            document.Open();
+            PdfWriter pdfWriter = PdfWriter.GetInstance(document,outputStream);
+            //document.Open();
+
+            
+
+            var stamper = new PdfStamper(reader,outputStream);
 
 
             //File.Move(pdfInput, pdfInput + "_temp" + ".pdf");
@@ -414,19 +530,93 @@ namespace CaurixTemplateOperator
             if (File.Exists(pdfInput + "_temp" + ".pdf")) { File.Delete(pdfInput + "_temp" + ".pdf");}
         }
 
-        
+
         /// Require a CP interface, logging, files to store settings?, settings window
         /// getDBtable
         /// parse response into an array
         /// fill templates
         /// email?
         /// start service to rerun under time
+        ///
+        ///
+
+
+        public static void EnumerateAccounts()
+        {
+            Outlook.Application olApp = new Outlook.Application();
+            Outlook.Accounts accounts =
+                olApp.Session.Accounts;
+            foreach (Outlook.Account account in accounts)
+            {
+                try
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine("Account: " + account.DisplayName);
+                    if (string.IsNullOrEmpty(account.SmtpAddress)
+                        || string.IsNullOrEmpty(account.UserName))
+                    {
+                        Outlook.AddressEntry oAE =
+                            account.CurrentUser.AddressEntry
+                            as Outlook.AddressEntry;
+                        if (oAE.Type == "EX")
+                        {
+                            Outlook.ExchangeUser oEU =
+                                oAE.GetExchangeUser()
+                                as Outlook.ExchangeUser;
+                            sb.AppendLine("UserName: " +
+                                oEU.Name);
+                            sb.AppendLine("SMTP: " +
+                                oEU.PrimarySmtpAddress);
+                            sb.AppendLine("Exchange Server: " +
+                                account.ExchangeMailboxServerName);
+                            sb.AppendLine("Exchange Server Version: " +
+                                account.ExchangeMailboxServerVersion);
+                        }
+                        else
+                        {
+                            sb.AppendLine("UserName: " +
+                                oAE.Name);
+                            sb.AppendLine("SMTP: " +
+                                oAE.Address);
+                        }
+                    }
+                    else
+                    {
+                        sb.AppendLine("UserName: " +
+                            account.UserName);
+                        sb.AppendLine("SMTP: " +
+                            account.SmtpAddress);
+                        if (account.AccountType ==
+                            Outlook.Enums.OlAccountType.olExchange)
+                        {
+                            sb.AppendLine("Exchange Server: " +
+                                account.ExchangeMailboxServerName);
+                            sb.AppendLine("Exchange Server Version: " +
+                                account.ExchangeMailboxServerVersion);
+                        }
+                    }
+                    if (account.DeliveryStore != null)
+                    {
+                        sb.AppendLine("Delivery Store: " +
+                            account.DeliveryStore.DisplayName);
+                    }
+                    sb.AppendLine("---------------------------------");
+                    Debug.Write(sb.ToString());
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
+        }
+
     }
 
     [Serializable]
     public class DbOutput
     {
-        public long Id{ get; set; }
+        public Dictionary<string,string> EntryValues = new Dictionary<string, string>();
+        /*public long Id{ get; set; }
         public string Source { get; set; }
         public string Gender { get; set; }
         public string Prenom { get; set; }
@@ -438,20 +628,22 @@ namespace CaurixTemplateOperator
         public string Quartier { get; set; }
         public string Ville { get; set; }
         public string Place_of_Birth { get; set; }
-        public string email { get; set; }
+        public string email { get; set; }*/
 
         public string[] GetListOfStrings()
         {
-            return new[] {"Id","Source","Gender","Prenom","Nom","MSIDN","NationalIDN", "Date_Naissance", "adresse", "Quartier", "Ville", "Place_of_Birth", "email" };
+            //return new[] {"Id","Source","Gender","Prenom","Nom","MSIDN","NationalIDN", "Date_Naissance", "adresse", "Quartier", "Ville", "Place_of_Birth", "email" };
+            return EntryValues.Keys.ToArray();
         }
 
         public string[] ConvertToStrings()
         {
-            return new[]
+            /*return new[]
             {
                 Id.ToString(), Source, Gender, Prenom, Nom, MSIDN, NationalIDN,
                 (Date_Naissance == null ? "" : Date_Naissance.Value.ToString("dd\\MM\\yyyy")), adresse, Quartier, Ville, Place_of_Birth, email
-            };
+            };*/
+            return EntryValues.Values.ToArray();
         }
 
     }

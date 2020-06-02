@@ -9,7 +9,7 @@
       <Value Profile="(Default)">inscritcaurix</Value>
     </Setting>
     <Setting Name="Port" Type="System.UInt32" Scope="User">
-      <Value Profile="(Default)">1434</Value>
+      <Value Profile="(Default)">3306</Value>
     </Setting>
     <Setting Name="UserID" Type="System.String" Scope="User">
       <Value Profile="(Default)">inscritcaurix</Value>

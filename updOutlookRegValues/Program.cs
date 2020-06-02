@@ -8,6 +8,7 @@ using System.Net.Mime;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft.Win32;
 //using Utility.ModifyRegistry;
 
@@ -22,6 +23,8 @@ namespace updOutlookRegValues
             RegistryKey baseLocMachineKey = Environment.Is64BitOperatingSystem ? RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64) : RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
             RegistryKey baseCurrUserKey = Environment.Is64BitOperatingSystem ? RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64) : RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32);
 
+            Console.WriteLine("HLMK = {0}, HCUK = {1}, and bitneess x64 is {2}", baseLocMachineKey.ToString(), baseCurrUserKey.ToString(), Environment.Is64BitOperatingSystem);
+
             //subKey.GetValue();
 
             var addr = "";
@@ -29,56 +32,102 @@ namespace updOutlookRegValues
             var ver = "";
 
             
-            RegistryKey subKey = baseLocMachineKey.OpenSubKey("SOFTWARE",true).OpenSubKey("Microsoft",true).OpenSubKey("Office",true).OpenSubKey("16.0",true).OpenSubKey("Outlook",true);
+            RegistryKey subKey = baseLocMachineKey.OpenSubKey("SOFTWARE",true)?.OpenSubKey("Microsoft",true)?.OpenSubKey("Office",true)?.OpenSubKey("16.0",true)?.OpenSubKey("Outlook",true);
 
             if (null != subKey)
             {
                 var val = subKey.GetValue("Bitness", null);
                 if (null != val)
                 {
-                    addr = @"SOFTWARE\Microsoft\Office\16.0\Outlook";
+                    addr = @"SOFTWARE\Microsoft\Office\16.0\Outlook"; 
                     ver = "16.0";
                 }
             }
+            else if (null != baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("WOW6432Node", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("16.0", true)?.OpenSubKey("Outlook", true))
+            {
+                subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("WOW6432Node", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("16.0", true)?.OpenSubKey("Outlook", true);
+                var val = subKey.GetValue("Bitness", null);
+                if (null != val)
+                {
+                    addr = @"SOFTWARE\WOW6432Node\Microsoft\Office\16.0\Outlook";
+                    ver = "16.0";
+                }
+
+            }
             else
             {
-                subKey = subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true).OpenSubKey("Microsoft", true).OpenSubKey("Office", true).OpenSubKey("15.0", true).OpenSubKey("Outlook", true);
+                subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("15.0", true)?.OpenSubKey("Outlook", true);
                 if (null != subKey)
                 {
                     var val = subKey.GetValue("Bitness", null);
                     if (null != val)
                     {
-                        addr = @"\SOFTWARE\Microsoft\Office\15.0\Outlook";
+                        addr = @"SOFTWARE\Microsoft\Office\15.0\Outlook";
                         ver = "15.0";
                     }
                 }
+                else if (null != baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("WOW6432Node", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("15.0", true)?.OpenSubKey("Outlook", true))
+                {
+                    subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("WOW6432Node", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("15.0", true)?.OpenSubKey("Outlook", true);
+                    var val = subKey.GetValue("Bitness", null);
+                    if (null != val)
+                    {
+                        addr = @"SOFTWARE\WOW6432Node\Microsoft\Office\15.0\Outlook";
+                        ver = "15.0";
+                    }
+
+                }
                 else
                 {
-                    subKey = subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true).OpenSubKey("Microsoft", true).OpenSubKey("Office", true).OpenSubKey("14.0", true).OpenSubKey("Outlook", true);
+                    subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("14.0", true)?.OpenSubKey("Outlook", true);
                     if (null != subKey)
                     {
                         var val = subKey.GetValue("Bitness", null);
                         if (null != val)
                         {
-                            addr = @"\SOFTWARE\Microsoft\Office\14.0\Outlook";
+                            addr = @"SOFTWARE\Microsoft\Office\14.0\Outlook";
                             ver = "14.0";
                         }
                     }
+                    else if (null != baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("WOW6432Node", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("14.0", true)?.OpenSubKey("Outlook", true))
+                    {
+                        subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("WOW6432Node", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("14.0", true)?.OpenSubKey("Outlook", true);
+                        var val = subKey.GetValue("Bitness", null);
+                        if (null != val)
+                        {
+                            addr = @"SOFTWARE\WOW6432Node\Microsoft\Office\14.0\Outlook";
+                            ver = "14.0";
+                        }
+
+                    }
                     else
                     {
-                        subKey = subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true).OpenSubKey("Microsoft", true).OpenSubKey("Office", true).OpenSubKey("12.0", true).OpenSubKey("Outlook", true);
+                        subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("12.0", true)?.OpenSubKey("Outlook", true)?.OpenSubKey("InstallRoot", true);
                         if (null != subKey)
                         {
-                            var val = subKey.GetValue("Bitness", null);
+                            var val = subKey.GetValue("Path", null);
                             if (null != val)
                             {
-                                addr = @"\SOFTWARE\Microsoft\Office\12.0\Outlook";
+                                addr = @"SOFTWARE\Microsoft\Office\12.0\Outlook";
                                 ver = "12.0";
                             }
                         }
+                        else if (null != baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("WOW6432Node", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("12.0", true)?.OpenSubKey("Outlook", true))
+                        {
+                            subKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true)?.OpenSubKey("WOW6432Node", true)?.OpenSubKey("Microsoft", true)?.OpenSubKey("Office", true)?.OpenSubKey("12.0", true)?.OpenSubKey("Outlook", true);
+                            var val = subKey.GetValue("Path", null);
+                            if (null != val)
+                            {
+                                addr = @"SOFTWARE\WOW6432Node\Microsoft\Office\12.0\Outlook";
+                                ver = "12.0";
+                            }
+
+                        }
                         else
                         {
-                            Environment.Exit(-1);
+                            MessageBox.Show("No suitable Office versions found");
+                            //Environment.Exit(-1);
+                            return;
                         }
                     }
                 }
@@ -129,15 +178,25 @@ namespace updOutlookRegValues
             {
                 //addr2 = addr.Replace("CURRENT_USER", "LOCAL_MACHINE");
 
-                RegistryKey subLocMachKey = baseLocMachineKey.OpenSubKey("SOFTWARE", true).OpenSubKey("Microsoft", true)
-                    .OpenSubKey("Office", true).OpenSubKey(ver, true).OpenSubKey("Outlook", true)
-                    .CreateSubKey("Security");
-                RegistryKey subLocMachPoliciesKey = baseLocMachineKey.CreateSubKey("SOFTWARE").CreateSubKey("Policies")
+                RegistryKey subLocMachKey = baseLocMachineKey;
+                RegistryKey subCurrUserKey = baseCurrUserKey;
+                foreach (var elem in addr.Split('\\'))
+                {
+                    subLocMachKey.OpenSubKey(elem, true);
+                    subCurrUserKey.OpenSubKey(elem, true);
+                };
+                subCurrUserKey.CreateSubKey("Security");
+                subLocMachKey.CreateSubKey("Security");
+
+                RegistryKey subLocMachPoliciesKey = (addr.Contains("WOW64")) ? 
+                    baseLocMachineKey.CreateSubKey("SOFTWARE").OpenSubKey("WOW6432Node", true).CreateSubKey("Policies")
+                    .CreateSubKey("Microsoft").CreateSubKey("Office").CreateSubKey(ver).CreateSubKey("Outlook")
+                    .CreateSubKey("Security") : 
+                    baseLocMachineKey.CreateSubKey("SOFTWARE").CreateSubKey("Policies")
                     .CreateSubKey("Microsoft").CreateSubKey("Office").CreateSubKey(ver).CreateSubKey("Outlook")
                     .CreateSubKey("Security");
-                RegistryKey subCurrUserKey = baseCurrUserKey.OpenSubKey("SOFTWARE", true).OpenSubKey("Microsoft", true)
-                    .OpenSubKey("Office", true).OpenSubKey(ver, true).OpenSubKey("Outlook", true)
-                    .CreateSubKey("Security");
+                
+                
 
                 /*RegistryKey userSKey = Registry.CurrentUser.CreateSubKey(addr.Replace(@"HKEY_CURRENT_USER\", "") + @"\Security");
                 RegistryKey locMachKey =

@@ -49,7 +49,7 @@ namespace CaurixTemplateOperator {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1434")]
+        [global::System.Configuration.DefaultSettingValueAttribute("3306")]
         public uint Port {
             get {
                 return ((uint)(this["Port"]));
