@@ -25,14 +25,14 @@ namespace CaurixTemplateOperator
             PortText.Text = CaurixTemplate.Default.Port.ToString();
             UserIdText.Text = CaurixTemplate.Default.UserID;
             PasswordText.Text = CaurixTemplate.Default.Password;
-            EmailFromCBox.Text = CaurixTemplate.Default.EmailSender;
+            //EmailFromCBox.Text = CaurixTemplate.Default.EmailSender;
             var OApp = new Outlook.Application(); //TODO: Apply a new SMTP/IMAP nagivation system to substitute Outlook!!!!
             var accounts = OApp.Session.Accounts;
             
-            foreach (Outlook.Account account in accounts)
+            /*foreach (Outlook.Account account in accounts)
             {
                 EmailFromCBox.Items.Add(account.DisplayName);
-            }
+            }*/
 
             OApp = null;
             EmailToDefaultText.Text = CaurixTemplate.Default.EmailReceiver;
@@ -54,7 +54,7 @@ namespace CaurixTemplateOperator
                 CaurixTemplate.Default.Port = uint.Parse(PortText.Text);
                 CaurixTemplate.Default.UserID = UserIdText.Text;
                 CaurixTemplate.Default.Password = PasswordText.Text;
-                CaurixTemplate.Default.EmailSender = EmailFromCBox.Text;
+                //CaurixTemplate.Default.EmailSender = EmailFromCBox.Text;
                 CaurixTemplate.Default.EmailReceiver = EmailToDefaultText.Text;
                 CaurixTemplate.Default.TimeToRestart = ulong.Parse(TimeToRerunText.Text);
                 CaurixTemplate.Default.TimeToDeferEmail = ulong.Parse(TimeDeferEmailText.Text);
@@ -83,6 +83,12 @@ namespace CaurixTemplateOperator
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Working with replacement dictionary");
             var f = new ReplacementDictionaryEdit();
             f.Show();
+        }
+
+        private void SmtpSetupClick_Click(object sender, EventArgs e)
+        {
+            SmtpSetup setupForm = new SmtpSetup();
+            setupForm.Show();
         }
     }
 }

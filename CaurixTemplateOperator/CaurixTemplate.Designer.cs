@@ -190,5 +190,17 @@ namespace CaurixTemplateOperator {
                 this["TemplatePath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SmtpConnectionJson {
+            get {
+                return ((string)(this["SmtpConnectionJson"]));
+            }
+            set {
+                this["SmtpConnectionJson"] = value;
+            }
+        }
     }
 }
