@@ -35,6 +35,8 @@
             this.SmtpServer = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.SmtpPort = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Ssl = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.ServerAddressIP = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.PortIP = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.AddRowClick = new System.Windows.Forms.Button();
             this.UseBtn = new System.Windows.Forms.Button();
             this.TestBtn = new System.Windows.Forms.Button();
@@ -58,7 +60,9 @@
             this.Password,
             this.SmtpServer,
             this.SmtpPort,
-            this.Ssl});
+            this.Ssl,
+            this.ServerAddressIP,
+            this.PortIP});
             this.dataGridView1.Location = new System.Drawing.Point(13, 40);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.Size = new System.Drawing.Size(773, 362);
@@ -95,6 +99,16 @@
             // 
             this.Ssl.HeaderText = "Use SSL";
             this.Ssl.Name = "Ssl";
+            // 
+            // ServerAddressIP
+            // 
+            this.ServerAddressIP.HeaderText = "IMAP Server Address";
+            this.ServerAddressIP.Name = "ServerAddressIP";
+            // 
+            // PortIP
+            // 
+            this.PortIP.HeaderText = "IMAP Server Port";
+            this.PortIP.Name = "PortIP";
             // 
             // AddRowClick
             // 
@@ -136,7 +150,7 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(117, 35);
             this.button1.TabIndex = 5;
-            this.button1.Text = "Save and Exit";
+            this.button1.Text = "Save";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -147,7 +161,7 @@
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(118, 35);
             this.button2.TabIndex = 6;
-            this.button2.Text = "Discard";
+            this.button2.Text = "Close";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -201,13 +215,15 @@
         private System.Windows.Forms.Button TestBtn;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button DeleteBtn;
         private System.Windows.Forms.DataGridViewTextBoxColumn N;
         private System.Windows.Forms.DataGridViewTextBoxColumn Email;
         private System.Windows.Forms.DataGridViewTextBoxColumn Password;
         private System.Windows.Forms.DataGridViewTextBoxColumn SmtpServer;
         private System.Windows.Forms.DataGridViewTextBoxColumn SmtpPort;
         private System.Windows.Forms.DataGridViewCheckBoxColumn Ssl;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button DeleteBtn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ServerAddressIP;
+        private System.Windows.Forms.DataGridViewTextBoxColumn PortIP;
     }
 }

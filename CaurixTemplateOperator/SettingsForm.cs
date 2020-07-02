@@ -26,15 +26,15 @@ namespace CaurixTemplateOperator
             UserIdText.Text = CaurixTemplate.Default.UserID;
             PasswordText.Text = CaurixTemplate.Default.Password;
             //EmailFromCBox.Text = CaurixTemplate.Default.EmailSender;
-            var OApp = new Outlook.Application(); //TODO: Apply a new SMTP/IMAP nagivation system to substitute Outlook!!!!
-            var accounts = OApp.Session.Accounts;
+            //var OApp = new Outlook.Application(); //TODO: Apply a new SMTP/IMAP nagivation system to substitute Outlook!!!!
+            //var accounts = OApp.Session.Accounts;
             
             /*foreach (Outlook.Account account in accounts)
             {
                 EmailFromCBox.Items.Add(account.DisplayName);
             }*/
 
-            OApp = null;
+            //OApp = null;
             EmailToDefaultText.Text = CaurixTemplate.Default.EmailReceiver;
             TimeToRerunText.Text = CaurixTemplate.Default.TimeToRestart.ToString();
             TimeDeferEmailText.Text = CaurixTemplate.Default.TimeToDeferEmail.ToString();
