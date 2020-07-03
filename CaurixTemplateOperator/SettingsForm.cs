@@ -14,7 +14,7 @@ using Outlook = NetOffice.OutlookApi;
 
 namespace CaurixTemplateOperator
 {
-    public partial class SettingsForm : Form
+    public partial class SettingsForm : Form, ISettingsForm
     {
         public SettingsForm()
         {
@@ -44,7 +44,7 @@ namespace CaurixTemplateOperator
             Show();
         }
 
-        private void SaveBtn_Click(object sender, EventArgs e)
+        public void SaveBtn_Click(object sender, EventArgs e)
         {
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Settings save click");
             try
@@ -71,21 +71,21 @@ namespace CaurixTemplateOperator
             }
         }
 
-        private void CancelBtn_Click(object sender, EventArgs e)
+        public void CancelBtn_Click(object sender, EventArgs e)
         {
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Settings cancel click");
             CaurixTemplate.Default.Reload();
             Close();
         }
 
-        private void ReplacementDictionaryText_DoubleClick(object sender, EventArgs e)
+        public void ReplacementDictionaryText_DoubleClick(object sender, EventArgs e)
         {
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Working with replacement dictionary");
             var f = new ReplacementDictionaryEdit();
             f.Show();
         }
 
-        private void SmtpSetupClick_Click(object sender, EventArgs e)
+        public void SmtpSetupClick_Click(object sender, EventArgs e)
         {
             SmtpSetup setupForm = new SmtpSetup();
             setupForm.Show();

@@ -12,7 +12,7 @@ using static CaurixTemplateOperator.Program;
 
 namespace CaurixTemplateOperator
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IForm1
     {
         public bool IsRunning;
         //internal Thread thread;
@@ -214,7 +214,7 @@ namespace CaurixTemplateOperator
                 //if (thread != null)  thread.Join(5000);
                 //thread = new Thread((() => Program.OrganizerStart())){IsBackground = true,Name = "MainThread"};
 
-            Program.OrganizerStart();
+            Program.prime.OrganizerStart();
                 //if (thread.IsAlive) IsRunning = true;
 
 

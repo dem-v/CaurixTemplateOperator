@@ -37,7 +37,7 @@ using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 
 namespace CaurixTemplateOperator
 {
-     public static class Program
+    public static class Program
     {
         internal static OdbcConnection OdbcConn;
         internal static OdbcCommand Command = new OdbcCommand();
@@ -52,7 +52,8 @@ namespace CaurixTemplateOperator
         public static ReplaceDictionaryArray ReplaceDictionary =
             JsonConvert.DeserializeObject<ReplaceDictionaryArray>(CaurixTemplate.Default.ReplacementJson);
         internal static Form1 fff;
-        internal static MailWrapper mailerWrapper = new MailWrapper();
+        internal static Primary.MailWrapper mailerWrapper = new Primary.MailWrapper();
+        internal static Primary prime;
 
         /// <summary>
         /// The main entry point for the application.
@@ -64,23 +65,56 @@ namespace CaurixTemplateOperator
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(fff = new Form1());
+            prime = new Primary(DbList,OdbcConn,Command,SQL,Adapter,data,DisableLoadingPicturesFromEmail,PathSaveTo,WordTemplatePath,ReplaceDictionary,mailerWrapper,ref fff);
         }
 
-        public static void OrganizerStart()
+    }
+
+     public class Primary : IPrimary
+     {
+         public List<DbOutput> DbList;
+         internal OdbcConnection OdbcConn;
+         internal OdbcCommand Command;
+         internal string SQL;
+         internal OdbcDataAdapter Adapter;
+         internal OdbcDataReader data;
+         public bool DisableLoadingPicturesFromEmail;
+         internal string PathSaveTo;
+         internal object WordTemplatePath;
+         public ReplaceDictionaryArray ReplaceDictionary;
+         internal MailWrapper mailerWrapper;
+         internal Form1 fff;
+        public Primary(List<DbOutput> dbList, OdbcConnection odbcConn, OdbcCommand command, string sql, OdbcDataAdapter adapter, OdbcDataReader data, bool disableEmail, string pathSaveTo, object wordTemplatePath, ReplaceDictionaryArray replaceDictionaryArray, MailWrapper mailWrapper, ref Form1 fff)
+        {
+            DbList = dbList;
+            OdbcConn = odbcConn;
+            Command = command;
+            SQL = sql;
+            Adapter = adapter;
+            this.data = data;
+            DisableLoadingPicturesFromEmail = disableEmail;
+            PathSaveTo = pathSaveTo;
+            WordTemplatePath = wordTemplatePath;
+            ReplaceDictionary = replaceDictionaryArray;
+            mailerWrapper = mailWrapper;
+            this.fff = fff;
+        }
+
+        public void OrganizerStart()
         {
             ConnectDb();
             //ExportFiles();
         }
 
-        public static Dictionary<string, string> GetFieldsFromDBRecord(ref OdbcDataReader dataReader)
+        public Dictionary<string, string> GetFieldsFromDBRecord(ref OdbcDataReader dataReader)
         {
-            var o = new Dictionary<string,string>();
+            var o = new Dictionary<string, string>();
             for (int ordinal = 0; ordinal < dataReader.FieldCount; ordinal++) o.Add(dataReader.GetName(ordinal), dataReader.IsDBNull(ordinal) ? String.Empty : dataReader.GetValue(ordinal).ToString());
-                //Console.WriteLine("Field {0}: {1}", ordinal, data.GetName(ordinal));
+            //Console.WriteLine("Field {0}: {1}", ordinal, data.GetName(ordinal));
             return o;
         }
 
-        public static void ConnectDb()
+        public void ConnectDb()
         {
             DbList.Clear();
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Trying to connect to DB...");
@@ -149,18 +183,18 @@ namespace CaurixTemplateOperator
 
         }
 
-        public static string LoadImageFromEmail(string number, string nameKey)  //TODO: Add adapter to fetch image from email using MailKit
+        public string LoadImageFromEmail(string number, string nameKey)  //TODO: Add adapter to fetch image from email using MailKit
         {
             var OutlookApp = new Outlook.Application();
             Outlook.Account thisAccount = null;
-            
+
             Retry:
 
             if (DisableLoadingPicturesFromEmail) return null;
 
             foreach (var account in OutlookApp.Session.Accounts)
             {
-                var a = (Outlook.Account) account;
+                var a = (Outlook.Account)account;
                 if (a.DisplayName == CaurixTemplate.Default.EmailSender)
                 {
                     thisAccount = a;
@@ -199,9 +233,9 @@ namespace CaurixTemplateOperator
                                 return null;
                         }
                     }
-                    
+
                 }
-                else if (result==DialogResult.Cancel)
+                else if (result == DialogResult.Cancel)
                 {
                     Environment.Exit(-1);
                 }
@@ -212,7 +246,8 @@ namespace CaurixTemplateOperator
             foreach (var sessionFolder in accFolder.Folders)
             {
                 var sn = sessionFolder.Name.ToLowerInvariant();
-                if (sn.Contains("inbox") || sn.Contains("входящие")) {
+                if (sn.Contains("inbox") || sn.Contains("входящие"))
+                {
                     inboxFolder = sessionFolder;
                     break;
                 }
@@ -256,11 +291,11 @@ namespace CaurixTemplateOperator
             return null;
         }
 
-        public static void ExportFiles()
+        public void ExportFiles()
         {
-            
+
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting files");
-            var WordApp = new Word.Application{Visible = false};
+            var WordApp = new Word.Application { Visible = false };
             WordTemplatePath = CaurixTemplate.Default.TemplatePath;
             if (WordTemplatePath.ToString() == string.Empty || WordTemplatePath == null)
             {
@@ -291,7 +326,7 @@ namespace CaurixTemplateOperator
                 Word.Document wdoc = WordApp.Documents.Open(ref WordTemplatePath, ReadOnly: false, Visible: false);
                 wdoc.Activate();
 
-                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting "+ MSIDNValue);
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting " + MSIDNValue);
                 var dbstr = itemDbOutput.ConvertToStrings();
                 int cnt = -1;
                 foreach (var s in itemDbOutput.GetListOfStrings())
@@ -326,9 +361,9 @@ namespace CaurixTemplateOperator
                     ImagePair imagePair = mailerWrapper.FetchImagesByMsidn(MSIDNValue, PathSaveTo);
                     var sign = LoadImageFromEmail(MSIDNValue, "signature");
                     var identif = LoadImageFromEmail(MSIDNValue, "identif");
-                    
+
                     InsertImagesIntoWord(wdoc, ((imagePair.signImagePath != null) ? imagePair.signImagePath : null), ((imagePair.identImagePath != null) ? imagePair.identImagePath : null));
-//                    InsertImagesIntoWord(wdoc, ((sign != null) ? sign : null), ((identif != null) ? identif : null));
+                    //                    InsertImagesIntoWord(wdoc, ((sign != null) ? sign : null), ((identif != null) ? identif : null));
                 }
                 catch (Exception e)
                 {
@@ -338,10 +373,10 @@ namespace CaurixTemplateOperator
 
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting to PDF");
                 var finalpath = PathSaveTo + /*"export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" +*/ MSIDNValue;
-                wdoc.ExportAsFixedFormat(/*PathSaveTo + "temp"*/finalpath,Word.WdExportFormat.wdExportFormatPDF,false);
+                wdoc.ExportAsFixedFormat(/*PathSaveTo + "temp"*/finalpath, Word.WdExportFormat.wdExportFormatPDF, false);
                 wdoc.Close(SaveChanges: false);
-                
-                
+
+
 
                 /*try
                 {
@@ -363,23 +398,25 @@ namespace CaurixTemplateOperator
                     Debug.Print(e.ToString());
                     //Console.WriteLine(e);
                 }
-                
+
             }
             WordApp.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
 
-            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(),"Issuing send command");
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), "Issuing send command");
             mailerWrapper.SendAllMessages();
         }
 
-        public static void DoMail(string filepath, string msidn) //TODO: use smtp settings to send email
+        public void DoMail(string filepath, string msidn) //TODO: use smtp settings to send email
         {
             using (var olApp = new Outlook.Application())
             {
-                
+
                 Outlook.Account thisAccount = null;
                 foreach (var acc in olApp.Session.Accounts)
                 {
-                    if (acc.DisplayName == CaurixTemplate.Default.EmailSender) {thisAccount = acc as Outlook.Account;
+                    if (acc.DisplayName == CaurixTemplate.Default.EmailSender)
+                    {
+                        thisAccount = acc as Outlook.Account;
                         break;
                     }
                 }
@@ -425,10 +462,10 @@ namespace CaurixTemplateOperator
                     Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Mailing: Error: " + e.Source + "\n\r" + e.Message + "\n\rInnerExc: " + e.InnerException.Source + "\n\r" + e.InnerException.Message);
                 }
             }
-                
+
         }
 
-        public static bool CheckIfToSkip(string inputIDN)
+        public bool CheckIfToSkip(string inputIDN)
         {
             List<string> MSIDN_Log = CaurixTemplate.Default.IdsToSkip.Split(',').ToList();
             foreach (var i in MSIDN_Log)
@@ -444,12 +481,12 @@ namespace CaurixTemplateOperator
             return false;
         }
 
-        public static void PushMessageToForm(string m)
+        public void PushMessageToForm(string m)
         {
             fff?.PushToStatus(m);
         }
 
-        public static void InsertImagesIntoWord2(Word.Document wDocument, ImagePair imagePair)
+        public void InsertImagesIntoWord2(Word.Document wDocument, ImagePair imagePair)
         {
             object falseObj = false;
             object trueObj = true;
@@ -478,13 +515,13 @@ namespace CaurixTemplateOperator
             }
         }
 
-        
-        public static void InsertImagesIntoWord(Word.Document wDocument, string signature = null, string identif = null)
+
+        public void InsertImagesIntoWord(Word.Document wDocument, string signature = null, string identif = null)
         {
             object falseObj = false;
             object trueObj = true;
             object start = wDocument.Content.Start;
-            object finish = wDocument.Content.GoTo(Word.WdGoToItem.wdGoToPage, Word.WdGoToDirection.wdGoToNext).Start-1;
+            object finish = wDocument.Content.GoTo(Word.WdGoToItem.wdGoToPage, Word.WdGoToDirection.wdGoToNext).Start - 1;
 
             var wdRange = wDocument.Range(start, finish);
             //Word.InlineShape isSigna = wdRange.InlineShapes.AddPicture(signature, falseObj, trueObj);
@@ -492,8 +529,8 @@ namespace CaurixTemplateOperator
             if (signature != null)
             {
                 Word.Shape shSigna = wDocument.Shapes.AddPicture(signature, falseObj, trueObj, 30, 560);
-                shSigna.ScaleHeight((float) 85 / shSigna.Height, MsoTriState.msoTrue);
-                shSigna.ScaleWidth((float) 180 / shSigna.Width, MsoTriState.msoTrue);
+                shSigna.ScaleHeight((float)85 / shSigna.Height, MsoTriState.msoTrue);
+                shSigna.ScaleWidth((float)180 / shSigna.Width, MsoTriState.msoTrue);
                 shSigna.Line.Visible = MsoTriState.msoFalse;
                 //wdRange.Paste();
             }
@@ -501,8 +538,8 @@ namespace CaurixTemplateOperator
             if (identif != null)
             {
                 Word.Shape shIdentif = wDocument.Shapes.AddPicture(identif, falseObj, trueObj, 180, 540);
-                shIdentif.ScaleHeight((float) 85 / shIdentif.Height, MsoTriState.msoTrue);
-                shIdentif.ScaleWidth((float) 165 / shIdentif.Width, MsoTriState.msoTrue);
+                shIdentif.ScaleHeight((float)85 / shIdentif.Height, MsoTriState.msoTrue);
+                shIdentif.ScaleWidth((float)165 / shIdentif.Width, MsoTriState.msoTrue);
                 shIdentif.Line.Visible = MsoTriState.msoFalse;
                 //wdRange.Paste();
             }
@@ -512,7 +549,7 @@ namespace CaurixTemplateOperator
         }
 
 
-        public static void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
+        public void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
         {
             if (pdfInput == pdfOutput)
             {
@@ -521,17 +558,17 @@ namespace CaurixTemplateOperator
             }
 
             var reader = new PdfReader(pdfInput);
-            
+
 
             iTextSharp.text.Document document = new iTextSharp.text.Document(reader.GetPageSize(1));
             Stream outputStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write);
             document.Open();
-            PdfWriter pdfWriter = PdfWriter.GetInstance(document,outputStream);
+            PdfWriter pdfWriter = PdfWriter.GetInstance(document, outputStream);
             //document.Open();
 
-            
 
-            var stamper = new PdfStamper(reader,outputStream);
+
+            var stamper = new PdfStamper(reader, outputStream);
 
 
             //File.Move(pdfInput, pdfInput + "_temp" + ".pdf");
@@ -553,7 +590,7 @@ namespace CaurixTemplateOperator
             if (signature != null)
             {
                 iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(signature, color: null);
-                image.SetAbsolutePosition((float) (r.Width * 0.190), (float) (r.Height * 0.242));
+                image.SetAbsolutePosition((float)(r.Width * 0.190), (float)(r.Height * 0.242));
                 image.ScaleToFit(120f, 250f);
                 pdfContentByte.AddImage(image);
                 //159,733    //120px horiz * 250px vert  345,662.5  168px * 250px
@@ -563,16 +600,16 @@ namespace CaurixTemplateOperator
             if (identif != null)
             {
                 iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(identif, color: null);
-                image.SetAbsolutePosition((float) (r.Width * 0.5), (float) (r.Height * 0.242));
+                image.SetAbsolutePosition((float)(r.Width * 0.5), (float)(r.Height * 0.242));
                 image.ScaleToFit(168f, 250f);
                 pdfContentByte.AddImage(image);
             }
 
             stamper.Close();
-               // }
+            // }
             //}
-            
-            if (File.Exists(pdfInput + "_temp" + ".pdf")) { File.Delete(pdfInput + "_temp" + ".pdf");}
+
+            if (File.Exists(pdfInput + "_temp" + ".pdf")) { File.Delete(pdfInput + "_temp" + ".pdf"); }
         }
 
 
@@ -585,7 +622,7 @@ namespace CaurixTemplateOperator
         ///
         ///
 
-        public class MailWrapper
+        public class MailWrapper : IMailWrapper
         {
             private List<MimeMessage> MessagesList = new List<MimeMessage>();
             private SmtpClient client;
@@ -826,7 +863,7 @@ namespace CaurixTemplateOperator
             }
         }
 
-        public static void EnumerateAccounts()
+        public void EnumerateAccounts()
         {
             Outlook.Application olApp = new Outlook.Application();
             Outlook.Accounts accounts =
@@ -894,13 +931,11 @@ namespace CaurixTemplateOperator
                 }
             }
         }
-
     }
-
      
 
-     public struct ImagePair
-     {
+    public struct ImagePair
+    {
          public Image signImage;
          public string signImagePath;
          public Image identImage;
@@ -986,7 +1021,7 @@ namespace CaurixTemplateOperator
             if (eventTime == "") eventTime = "[" + DateTime.Now.ToString("O") + "]";
             var combinedString = eventTime + ": " + threadName + ": " + message;
             alw.AddMessage(combinedString);
-            Program.PushMessageToForm(combinedString);
+            Program.prime.PushMessageToForm(combinedString);
         }
     }
 

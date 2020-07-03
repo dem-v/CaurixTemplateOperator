@@ -1,5 +1,14 @@
-﻿namespace CaurixTemplateOperator
+﻿using System;
+
+namespace CaurixTemplateOperator
 {
+    
+    /// <summary>
+    /// Required method for Designer support - do not modify
+    /// the contents of this method with the code editor.
+    /// </summary>
+     
+
     partial class ReplacementDictionaryEdit
     {
         /// <summary>
@@ -26,7 +35,7 @@
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
+        public void InitializeComponent()
         {
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();

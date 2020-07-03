@@ -1,5 +1,21 @@
-﻿namespace CaurixTemplateOperator
+﻿using System;
+
+namespace CaurixTemplateOperator
 {
+    public interface ISettingsForm
+    {
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        void InitializeComponent();
+
+        void SaveBtn_Click(object sender, EventArgs e);
+        void CancelBtn_Click(object sender, EventArgs e);
+        void ReplacementDictionaryText_DoubleClick(object sender, EventArgs e);
+        void SmtpSetupClick_Click(object sender, EventArgs e);
+    }
+
     partial class SettingsForm
     {
         /// <summary>
@@ -26,7 +42,7 @@
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
+        public void InitializeComponent()
         {
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();

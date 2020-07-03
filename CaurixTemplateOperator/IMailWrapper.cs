@@ -1,0 +1,6 @@
+﻿using MimeKit;
+
+namespace CaurixTemplateOperator
+{
+    
+}

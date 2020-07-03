@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace CaurixTemplateOperator
 {
-    public partial class ReplacementDictionaryEdit : Form
+    public partial class ReplacementDictionaryEdit : Form, IReplacementDictionaryEdit
     {
         public ReplacementDictionaryEdit()
         {
@@ -34,7 +34,7 @@ namespace CaurixTemplateOperator
             //dataGridView1.DataSource = jsonObj;
         }
 
-        private void addNewColumnBtn_Click(object sender, EventArgs e)
+        public void addNewColumnBtn_Click(object sender, EventArgs e)
         {
             if (newColName.Text != String.Empty)
             {
@@ -49,7 +49,7 @@ namespace CaurixTemplateOperator
 
         }
 
-        private void ColumnListComboBox_Click(object sender, EventArgs e)
+        public void ColumnListComboBox_Click(object sender, EventArgs e)
         {
             ColumnListComboBox.Items.Clear();
             foreach (DataGridViewColumn column in dataGridView1.Columns)
@@ -58,7 +58,7 @@ namespace CaurixTemplateOperator
             }
         }
 
-        private void DeleteColumnBtn_Click(object sender, EventArgs e)
+        public void DeleteColumnBtn_Click(object sender, EventArgs e)
         {
             if (ColumnListComboBox.Text == String.Empty) return;
             int colIndex = -1;
@@ -74,7 +74,7 @@ namespace CaurixTemplateOperator
             if (colIndex > -1) dataGridView1.Columns.RemoveAt(colIndex);
         }
 
-        private void SaveDataBtn_Click(object sender, EventArgs e)
+        public void SaveDataBtn_Click(object sender, EventArgs e)
         {
             var obj = new ReplaceDictionaryArray();
             foreach (DataGridViewColumn col in dataGridView1.Columns)
@@ -91,12 +91,12 @@ namespace CaurixTemplateOperator
             Close();
         }
 
-        private void CancelChangesBtn_Click(object sender, EventArgs e)
+        public void CancelChangesBtn_Click(object sender, EventArgs e)
         {
             Close();
         }
 
-        private void AddRowBtn_Click(object sender, EventArgs e)
+        public void AddRowBtn_Click(object sender, EventArgs e)
         {
             if (dataGridView1.RowCount == 0 && dataGridView1.Columns.Count>0) dataGridView1.Rows.Add();
         }

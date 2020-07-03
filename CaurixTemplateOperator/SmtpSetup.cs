@@ -19,7 +19,7 @@ using Newtonsoft.Json;
 
 namespace CaurixTemplateOperator
 {
-    public partial class SmtpSetup : Form
+    public partial class SmtpSetup : Form, ISmtpSetupForm
     {
         public int selectionCode = -1;
         
@@ -50,19 +50,19 @@ namespace CaurixTemplateOperator
             }
         }
 
-        private void AddRowClick_Click(object sender, EventArgs e)
+        public void AddRowClick_Click(object sender, EventArgs e)
         {
             dataGridView1.Rows.Add(new string[] {dataGridView1.RowCount.ToString(), "", "", "", "", bool.FalseString});
         }
 
-        private void DeleteBtn_Click(object sender, EventArgs e)
+        public void DeleteBtn_Click(object sender, EventArgs e)
         {
             
             dataGridView1.Rows.RemoveAt(dataGridView1.CurrentCell.RowIndex);
             
         }
 
-        private void TestBtn_Click(object sender, EventArgs e)
+        public void TestBtn_Click(object sender, EventArgs e)
         {
             
             //if (dataGridView1.SelectedRows.Count == 0) return;
@@ -113,13 +113,13 @@ namespace CaurixTemplateOperator
             //}
         }
 
-        private void UseBtn_Click(object sender, EventArgs e)
+        public void UseBtn_Click(object sender, EventArgs e)
         {
             selectionCode = int.Parse(dataGridView1[dataGridView1.CurrentCell.RowIndex,0].Value.ToString());
             label1.Text = label1.Text.Replace(@"{None}", string.Format("*{0}*", selectionCode));
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        public void button1_Click(object sender, EventArgs e)
         {
             SmtpAccountsJsonClass jsonObj = new SmtpAccountsJsonClass();
             jsonObj.SelectedRecord = selectionCode;
@@ -144,12 +144,12 @@ namespace CaurixTemplateOperator
             //Close();
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        public void button2_Click(object sender, EventArgs e)
         {
             Close();
         }
 
-        private void dataGridView1_Fs(object sender, DataGridViewCellEventArgs e)
+        public void dataGridView1_Fs(object sender, DataGridViewCellEventArgs e)
         {
             if (e.ColumnIndex == 1 && dataGridView1.RowCount > 0)
             {
