@@ -209,10 +209,10 @@ Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\CaurixTemplateOperato
 Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\CaurixTemplateOperator\bin\Release\stdole.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\CaurixTemplateOperator\bin\Release\VBIDEApi.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\CaurixTemplateOperator\bin\Release\VBIDEApi.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\CaurixTemplateOperator\template.docx"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\updOutlookRegValues\bin\Release\updOutlookRegValues.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\updOutlookRegValues\bin\Release\updOutlookRegValues.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\updOutlookRegValues\bin\Release\updOutlookRegValues.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\CaurixTemplateOperator\Template.docx"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\updOutlookRegValues\bin\Release\updOutlookRegValues.exe"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\updOutlookRegValues\bin\Release\updOutlookRegValues.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\updOutlookRegValues\bin\Release\updOutlookRegValues.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\CaurixTemplateOperator\bin\Release\NDP461-KB3102438-Web.exe"; DestDir: "{app}\Lib"; Flags: deleteafterinstall  
 Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\CaurixTemplateOperator\bin\Release\mysql-connector-odbc-5.3.14-win32.msi"; DestDir: "{app}\Lib"; Flags: deleteafterinstall
 Source: "C:\Users\Demi\source\repos\CaurixTemplateOperator\CaurixTemplateOperator\bin\Release\mysql-connector-odbc-5.3.14-winx64.msi"; DestDir: "{app}\Lib"; Flags: deleteafterinstall
@@ -227,5 +227,5 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Filename: "{app}\Lib\mysql-connector-odbc-5.3.14-win32.msi"; Description: "Updates for ODBC Driver"; StatusMsg: "Updating ODBC Driver"; Flags: shellexec waituntilterminated; Check: CheckOdbc    
 ;Filename: "{app}\Lib\mysql-connector-odbc-5.3.14-winx64.msi"; Description: "Updates for ODBC Driver"; StatusMsg: "Updating ODBC Driver"; Flags: shellexec waituntilterminated; Check: IsWin64
 Filename: "{app}\Lib\NDP461-KB3102438-Web.exe"; Description: "Updates for .Net Framework"; StatusMsg: "Updating .Net Framework"; Flags: waituntilterminated; Check: CheckDotNet
-Filename: "{app}\updOutlookRegValues.exe"; Description: "Registry update for Outlook"; StatusMsg: "Updating Outlook settings"; Flags: waituntilterminated
+; Filename: "{app}\updOutlookRegValues.exe"; Description: "Registry update for Outlook"; StatusMsg: "Updating Outlook settings"; Flags: waituntilterminated
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

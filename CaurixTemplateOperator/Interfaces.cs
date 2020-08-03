@@ -46,6 +46,11 @@ namespace CaurixTemplateOperator
     {
         bool CheckIfToSkip(string inputIDN);
         void ConnectDb();
+        void PushProcessedFlagToDb();
+
+        //TODO: Add function to update DB field when processed
+        //TODO: Update function to send email with the created document
+
         void DoMail(string filepath, string msidn);
         void EnumerateAccounts();
         void ExportFiles();

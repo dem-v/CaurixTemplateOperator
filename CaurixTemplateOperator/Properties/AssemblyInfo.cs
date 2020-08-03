@@ -36,4 +36,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: InternalsVisibleTo("CaurixTemplateOperator.Tests")]
 [assembly: InternalsVisibleTo("CaurixTemplateOperator.Explorables")]
+[assembly: InternalsVisibleTo("CaurixTemplateOperator.Tests1")]
 

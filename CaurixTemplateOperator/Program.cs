@@ -1,39 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-//using MySql.Data.MySqlClient;
-using System.Data.Odbc;
-using System.Diagnostics;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using Microsoft.Office.Interop.Outlook;
-using Newtonsoft.Json;
-using Application = System.Windows.Forms.Application;
-using Word = Microsoft.Office.Interop.Word;
-using Outlook = NetOffice.OutlookApi;
-using iTextSharp.text.pdf;
-using Microsoft.Office.Core;
-using NetOffice.VBIDEApi;
-using OlItemType = NetOffice.OutlookApi.Enums.OlItemType;
-using Timer = System.Threading.Timer;
-using Exception = System.Exception;
-using System.Net;
-using System.Net.Mail;
+﻿using iTextSharp.text.pdf;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Net.Smtp;
 using MailKit.Search;
-using MailKit.Security;
+using Microsoft.Office.Core;
+using Microsoft.Office.Interop.Outlook;
 using MimeKit;
 using MimeKit.IO;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.IO;
+
+//using MySql.Data.MySqlClient;
+using System.Data.Odbc;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Net.Mail;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+using Application = System.Windows.Forms.Application;
+using Exception = System.Exception;
+using OlItemType = NetOffice.OutlookApi.Enums.OlItemType;
+using Outlook = NetOffice.OutlookApi;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
+using Word = Microsoft.Office.Interop.Word;
 
 namespace CaurixTemplateOperator
 {
@@ -46,44 +42,63 @@ namespace CaurixTemplateOperator
         internal static string SQL = "select * from subscriber LIMIT 0, 30";
         public static List<DbOutput> DbList = new List<DbOutput>();
         internal static object WordTemplatePath = CaurixTemplate.Default.TemplatePath;
-        internal static string PathSaveTo;
+        internal static string PathSaveTo = CaurixTemplate.Default.PathSaveTo;
         public static bool DisableLoadingPicturesFromEmail = CaurixTemplate.Default.DisableLoadingImagesFromEmail;
 
         public static ReplaceDictionaryArray ReplaceDictionary =
             JsonConvert.DeserializeObject<ReplaceDictionaryArray>(CaurixTemplate.Default.ReplacementJson);
+
         internal static Form1 fff;
-        internal static Primary.MailWrapper mailerWrapper = new Primary.MailWrapper();
+        internal static MailWrapper mailerWrapper = new MailWrapper();
         internal static Primary prime;
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         //[STAThread]
-        static void Main()
+        private static void Main()
         {
-            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Starting form 1");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            //fff = new Form1();
+            //prime = new Primary(DbList, OdbcConn, Command, SQL, Adapter, data, DisableLoadingPicturesFromEmail, PathSaveTo, WordTemplatePath, ReplaceDictionary, mailerWrapper, ref fff);
             Application.Run(fff = new Form1());
-            prime = new Primary(DbList,OdbcConn,Command,SQL,Adapter,data,DisableLoadingPicturesFromEmail,PathSaveTo,WordTemplatePath,ReplaceDictionary,mailerWrapper,ref fff);
+
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Starting form 1");
         }
 
+        public static void PrimaryInit(Form1 fff1)
+        {
+            prime = new Primary(DbList, OdbcConn, Command, SQL, Adapter, data, DisableLoadingPicturesFromEmail, PathSaveTo, WordTemplatePath, ReplaceDictionary, mailerWrapper, ref fff1);
+        }
+        internal static long GetAvailableFreeSpace(string driveName)
+        {
+            foreach (DriveInfo drive in DriveInfo.GetDrives())
+            {
+                if (drive.IsReady && drive.Name == driveName)
+                {
+                    return drive.AvailableFreeSpace;
+                }
+            }
+            return -1;
+        }
     }
 
-     public class Primary : IPrimary
-     {
-         public List<DbOutput> DbList;
-         internal OdbcConnection OdbcConn;
-         internal OdbcCommand Command;
-         internal string SQL;
-         internal OdbcDataAdapter Adapter;
-         internal OdbcDataReader data;
-         public bool DisableLoadingPicturesFromEmail;
-         internal string PathSaveTo;
-         internal object WordTemplatePath;
-         public ReplaceDictionaryArray ReplaceDictionary;
-         internal MailWrapper mailerWrapper;
-         internal Form1 fff;
+    public class Primary : IPrimary
+    {
+        public List<DbOutput> DbList;
+        internal OdbcConnection OdbcConn;
+        internal OdbcCommand Command;
+        internal string SQL;
+        internal OdbcDataAdapter Adapter;
+        internal OdbcDataReader data;
+        public bool DisableLoadingPicturesFromEmail;
+        internal string PathSaveTo;
+        internal object WordTemplatePath;
+        public ReplaceDictionaryArray ReplaceDictionary;
+        internal MailWrapper mailerWrapper;
+        internal Form1 fff;
+
         public Primary(List<DbOutput> dbList, OdbcConnection odbcConn, OdbcCommand command, string sql, OdbcDataAdapter adapter, OdbcDataReader data, bool disableEmail, string pathSaveTo, object wordTemplatePath, ReplaceDictionaryArray replaceDictionaryArray, MailWrapper mailWrapper, ref Form1 fff)
         {
             DbList = dbList;
@@ -109,7 +124,10 @@ namespace CaurixTemplateOperator
         public Dictionary<string, string> GetFieldsFromDBRecord(ref OdbcDataReader dataReader)
         {
             var o = new Dictionary<string, string>();
-            for (int ordinal = 0; ordinal < dataReader.FieldCount; ordinal++) o.Add(dataReader.GetName(ordinal), dataReader.IsDBNull(ordinal) ? String.Empty : dataReader.GetValue(ordinal).ToString());
+            for (int ordinal = 0; ordinal < dataReader.FieldCount; ordinal++)
+            {
+                o.Add(dataReader.GetName(ordinal), dataReader.IsDBNull(ordinal) ? String.Empty : dataReader.GetValue(ordinal).ToString());
+            }
             //Console.WriteLine("Field {0}: {1}", ordinal, data.GetName(ordinal));
             return o;
         }
@@ -131,8 +149,6 @@ namespace CaurixTemplateOperator
                 Adapter.SelectCommand = Command;
                 data = Command.ExecuteReader();
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Data received");
-
-
 
                 while (data.Read())
                 {
@@ -161,11 +177,12 @@ namespace CaurixTemplateOperator
             {
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Error with database: " + ex.Source + " " + ex.Message);
                 MessageBox.Show(ex.Message);
-                if (OdbcConn.State != ConnectionState.Closed) OdbcConn.Close();
+                if (OdbcConn.State != ConnectionState.Closed)
+                {
+                    OdbcConn.Close();
+                }
             }
             //SQL = "SELECT * FROM mac WHERE mac = '" + macAddress + "'";
-
-
 
             /*if ((int)OdbcConn.State == 1)
             {
@@ -180,17 +197,19 @@ namespace CaurixTemplateOperator
                 }
             }*/
             ExportFiles();
-
         }
 
-        public string LoadImageFromEmail(string number, string nameKey)  //TODO: Add adapter to fetch image from email using MailKit
+        public string LoadImageFromEmail(string number, string nameKey)  //TOD: Add adapter to fetch image from email using MailKit
         {
             var OutlookApp = new Outlook.Application();
             Outlook.Account thisAccount = null;
 
             Retry:
 
-            if (DisableLoadingPicturesFromEmail) return null;
+            if (DisableLoadingPicturesFromEmail)
+            {
+                return null;
+            }
 
             foreach (var account in OutlookApp.Session.Accounts)
             {
@@ -226,14 +245,15 @@ namespace CaurixTemplateOperator
                             case DialogResult.Yes:
                                 DisableLoadingPicturesFromEmail = true;
                                 return null;
+
                             case DialogResult.No:
                                 Environment.Exit(-1);
                                 break;
+
                             default:
                                 return null;
                         }
                     }
-
                 }
                 else if (result == DialogResult.Cancel)
                 {
@@ -253,9 +273,16 @@ namespace CaurixTemplateOperator
                 }
             }
 
-            if (inboxFolder == null) return null;
+            if (inboxFolder == null)
+            {
+                return null;
+            }
+
             var criteria = "@SQL=\"urn:schemas:httpmail:subject\" like '%" + number + "%'";
-            if (inboxFolder.Items.Restrict(criteria).Count == 0) return null;
+            if (inboxFolder.Items.Restrict(criteria).Count == 0)
+            {
+                return null;
+            }
 
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Mail: Reading mails for attachments");
             //List<Outlook.MailItem> mailItems = new List<MailItem>();
@@ -273,7 +300,11 @@ namespace CaurixTemplateOperator
                     }
                 }
 
-                if (thisMailItem == null) continue;
+                if (thisMailItem == null)
+                {
+                    continue;
+                }
+
                 foreach (Outlook.Attachment a in thisMailItem.Attachments)
                 {
                     if (a.FileName.Contains(nameKey))
@@ -285,7 +316,6 @@ namespace CaurixTemplateOperator
                         return PathSaveTo + @"\" + number + nameKey;
                     }
                 }
-
             }
 
             return null;
@@ -293,7 +323,6 @@ namespace CaurixTemplateOperator
 
         public void ExportFiles()
         {
-
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting files");
             var WordApp = new Word.Application { Visible = false };
             WordTemplatePath = CaurixTemplate.Default.TemplatePath;
@@ -304,79 +333,123 @@ namespace CaurixTemplateOperator
             }
 
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Word is ready. Files to export " + DbList.Count);
-            foreach (var itemDbOutput in DbList)
+
+            if (Program.GetAvailableFreeSpace(Path.GetPathRoot(PathSaveTo)) <= (DbList.Count * 5 * 1024 * 1024))
             {
-                string MSIDNValue = String.Empty;
-                //string IDValue = String.Empty;
-                try
+                var memCheck = false;
+                while (!memCheck)
                 {
-                    MSIDNValue = itemDbOutput.EntryValues["MSIDN"];
-                    //IDValue = itemDbOutput.EntryValues["Id"];
-                }
-                catch (Exception e)
-                {
-                    MessageBox.Show(
-                        "Important information! MSIDN was not found in the database, some of the functions will be impaired. Please, contact developer.");
-                    Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": ERROR!!!! MSIDN is non existent!");
-                }
-
-                var check = CheckIfToSkip(MSIDNValue);
-                if (check) continue;
-
-                Word.Document wdoc = WordApp.Documents.Open(ref WordTemplatePath, ReadOnly: false, Visible: false);
-                wdoc.Activate();
-
-                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting " + MSIDNValue);
-                var dbstr = itemDbOutput.ConvertToStrings();
-                int cnt = -1;
-                foreach (var s in itemDbOutput.GetListOfStrings())
-                {
-                    cnt++;
-                    int k = ReplaceDictionary.GetIndexByKeyName(s);
-                    if (k > -1)
+                    var res = MessageBox.Show(
+                        string.Format(
+                            "Your drive {0} doesn't have enough space left: {1}MB. App needs {2}MB Please, clean up some space and retry. Cancel closes the app.",
+                            Path.GetPathRoot(PathSaveTo),
+                            Program.GetAvailableFreeSpace(Path.GetPathRoot(PathSaveTo)) / 1024 / 1024,
+                            DbList.Count * 5),
+                        "Not enough memory", MessageBoxButtons.RetryCancel);
+                    if (res == DialogResult.Retry)
                     {
-                        Word.Find findObject = WordApp.Selection.Find;
-                        findObject.ClearFormatting();
-                        findObject.Text = ReplaceDictionary.elem[k].value;
-                        findObject.Replacement.ClearFormatting();
-                        findObject.Replacement.Text = dbstr[cnt];
-
-                        object replaceAll = Word.WdReplace.wdReplaceAll;
-                        findObject.Execute(Replace: ref replaceAll);
+                        if (Program.GetAvailableFreeSpace(Path.GetPathRoot(PathSaveTo)) >
+                            (DbList.Count * 5 * 1024 * 1024))
+                            memCheck = true;
+                    }
+                    else if (res == DialogResult.Cancel)
+                    {
+                        Environment.Exit(-1);
                     }
                 }
+            }
 
-                var findObj2 = WordApp.Selection.Find;
-                findObj2.ClearFormatting();
-                findObj2.Text = "ZZZZZZ";
-                findObj2.Replacement.ClearFormatting();
-                findObj2.Replacement.Text = DateTime.Now.ToString("dd-MM-yy");
-
-                object replAll = Word.WdReplace.wdReplaceAll;
-                findObj2.Execute(Replace: ref replAll);
-
+            foreach (var itemDbOutput in DbList)
+            {
+                Word.Document wdoc = null;
+                string MSIDNValue = string.Empty;
+                string finalpath;
                 try
                 {
-                    Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
-                    ImagePair imagePair = mailerWrapper.FetchImagesByMsidn(MSIDNValue, PathSaveTo);
-                    var sign = LoadImageFromEmail(MSIDNValue, "signature");
-                    var identif = LoadImageFromEmail(MSIDNValue, "identif");
+                    
+                    //string IDValue = String.Empty;
+                    try
+                    {
+                        MSIDNValue = itemDbOutput.EntryValues["MSIDN"];
+                        //IDValue = itemDbOutput.EntryValues["Id"];
+                    }
+                    catch (Exception e)
+                    {
+                        MessageBox.Show(
+                            "Important information! MSIDN was not found in the database, some of the functions will be impaired. Please, contact developer.");
+                        Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": ERROR!!!! MSIDN is non existent!");
+                    }
 
-                    InsertImagesIntoWord(wdoc, ((imagePair.signImagePath != null) ? imagePair.signImagePath : null), ((imagePair.identImagePath != null) ? imagePair.identImagePath : null));
-                    //                    InsertImagesIntoWord(wdoc, ((sign != null) ? sign : null), ((identif != null) ? identif : null));
+                    var check = CheckIfToSkip(MSIDNValue);
+                    if (check)
+                    {
+                        continue;
+                    }
+
+                    wdoc = WordApp.Documents.Open(ref WordTemplatePath, ReadOnly: false, Visible: false);
+                    wdoc.Activate();
+
+                    Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting " + MSIDNValue);
+                    var dbstr = itemDbOutput.ConvertToStrings();
+                    int cnt = -1;
+                    foreach (var s in itemDbOutput.GetListOfStrings())
+                    {
+                        cnt++;
+                        int k = ReplaceDictionary.GetIndexByKeyName(s);
+                        if (k > -1)
+                        {
+                            Word.Find findObject = WordApp.Selection.Find;
+                            findObject.ClearFormatting();
+                            findObject.Text = ReplaceDictionary.elem[k].value;
+                            findObject.Replacement.ClearFormatting();
+                            findObject.Replacement.Text = dbstr[cnt];
+
+                            object replaceAll = Word.WdReplace.wdReplaceAll;
+                            findObject.Execute(Replace: ref replaceAll);
+                        }
+                    }
+
+                    var findObj2 = WordApp.Selection.Find;
+                    findObj2.ClearFormatting();
+                    findObj2.Text = "ZZZZZZ";
+                    findObj2.Replacement.ClearFormatting();
+                    findObj2.Replacement.Text = DateTime.Now.ToString("dd-MM-yy");
+
+                    object replAll = Word.WdReplace.wdReplaceAll;
+                    findObj2.Execute(Replace: ref replAll);
+
+                    try
+                    {
+                        Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Fetching images from email and inserting them to PDF");
+                        ImagePair imagePair = mailerWrapper.FetchImagesByMsidn(MSIDNValue, PathSaveTo);
+                        //var sign = LoadImageFromEmail(MSIDNValue, "signature");
+                        //var identif = LoadImageFromEmail(MSIDNValue, "identif");
+
+                        InsertImagesIntoWord(wdoc, ((imagePair.signImagePath != null) ? imagePair.signImagePath : null), ((imagePair.identImagePath != null) ? imagePair.identImagePath : null));
+                        //                    InsertImagesIntoWord(wdoc, ((sign != null) ? sign : null), ((identif != null) ? identif : null));
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), e.ToString());
+                        //Console.WriteLine(e);
+                    }
+
+                    Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting to PDF");
+                    finalpath = PathSaveTo + /*"export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" +*/ MSIDNValue + ".pdf";
+                    wdoc.ExportAsFixedFormat(/*PathSaveTo + "temp"*/finalpath, Word.WdExportFormat.wdExportFormatPDF, false);
+                    wdoc.Close(SaveChanges: false);
                 }
-                catch (Exception e)
+                finally
                 {
-                    Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), e.ToString());
-                    //Console.WriteLine(e);
+                    try
+                    {
+                        wdoc?.Close(SaveChanges: false);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: " + e.ToString());
+                    } 
                 }
-
-                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Exporting to PDF");
-                var finalpath = PathSaveTo + /*"export-" + DateTime.Today.ToString("yyyy-MM-dd") + "@" +*/ MSIDNValue;
-                wdoc.ExportAsFixedFormat(/*PathSaveTo + "temp"*/finalpath, Word.WdExportFormat.wdExportFormatPDF, false);
-                wdoc.Close(SaveChanges: false);
-
-
 
                 /*try
                 {
@@ -391,14 +464,13 @@ namespace CaurixTemplateOperator
                 try
                 {
                     //DoMail(finalpath + ".pdf", MSIDNValue);
-                    mailerWrapper.AddMessageToQueue(mailerWrapper.CreateMessageWithAttachment(finalpath + ".pdf", MSIDNValue));
+                    mailerWrapper.AddMessageToQueue(mailerWrapper.CreateMessageWithAttachment(finalpath, MSIDNValue));
                 }
                 catch (Exception e)
                 {
                     Debug.Print(e.ToString());
                     //Console.WriteLine(e);
                 }
-
             }
             WordApp.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
 
@@ -406,11 +478,10 @@ namespace CaurixTemplateOperator
             mailerWrapper.SendAllMessages();
         }
 
-        public void DoMail(string filepath, string msidn) //TODO: use smtp settings to send email
+        public void DoMail(string filepath, string msidn) 
         {
             using (var olApp = new Outlook.Application())
             {
-
                 Outlook.Account thisAccount = null;
                 foreach (var acc in olApp.Session.Accounts)
                 {
@@ -443,7 +514,6 @@ namespace CaurixTemplateOperator
                 mail.Attachments.Add(attachment);
                 SmtpServer.Port = 25;
 
-
                 var olMail = olApp.CreateItem(OlItemType.olMailItem) as Outlook.MailItem;
                 olMail.To = CaurixTemplate.Default.EmailReceiver;
                 olMail.Subject = "Generated doc for " + msidn;
@@ -462,7 +532,6 @@ namespace CaurixTemplateOperator
                     Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Mailing: Error: " + e.Source + "\n\r" + e.Message + "\n\rInnerExc: " + e.InnerException.Source + "\n\r" + e.InnerException.Message);
                 }
             }
-
         }
 
         public bool CheckIfToSkip(string inputIDN)
@@ -515,7 +584,6 @@ namespace CaurixTemplateOperator
             }
         }
 
-
         public void InsertImagesIntoWord(Word.Document wDocument, string signature = null, string identif = null)
         {
             object falseObj = false;
@@ -545,20 +613,16 @@ namespace CaurixTemplateOperator
             }
 
             //wdRange.Paste();
-
         }
-
 
         public void InsertImagesIntoPDF(string pdfInput, string pdfOutput, Image signature = null, Image identif = null)
         {
             if (pdfInput == pdfOutput)
             {
                 pdfOutput += new DateTime().ToString("yyyy-MM-dd-hh-mm-ss") + ".pdf";
-
             }
 
             var reader = new PdfReader(pdfInput);
-
 
             iTextSharp.text.Document document = new iTextSharp.text.Document(reader.GetPageSize(1));
             Stream outputStream = new FileStream(pdfOutput, FileMode.Create, FileAccess.Write);
@@ -566,10 +630,7 @@ namespace CaurixTemplateOperator
             PdfWriter pdfWriter = PdfWriter.GetInstance(document, outputStream);
             //document.Open();
 
-
-
             var stamper = new PdfStamper(reader, outputStream);
-
 
             //File.Move(pdfInput, pdfInput + "_temp" + ".pdf");
             //var f = File.Exists(pdfInput + "_temp" + ".pdf") ? File.Open(pdfInput + "_temp" + ".pdf",FileMode.Open, FileAccess.Read,FileShare.Read) : null;
@@ -586,7 +647,6 @@ namespace CaurixTemplateOperator
             var pdfContentByte = stamper.GetOverContent(1);
             iTextSharp.text.Rectangle r = reader.GetPageSize(1);
 
-
             if (signature != null)
             {
                 iTextSharp.text.Image image = iTextSharp.text.Image.GetInstance(signature, color: null);
@@ -594,7 +654,6 @@ namespace CaurixTemplateOperator
                 image.ScaleToFit(120f, 250f);
                 pdfContentByte.AddImage(image);
                 //159,733    //120px horiz * 250px vert  345,662.5  168px * 250px
-
             }
 
             if (identif != null)
@@ -612,7 +671,6 @@ namespace CaurixTemplateOperator
             if (File.Exists(pdfInput + "_temp" + ".pdf")) { File.Delete(pdfInput + "_temp" + ".pdf"); }
         }
 
-
         /// Require a CP interface, logging, files to store settings?, settings window
         /// getDBtable
         /// parse response into an array
@@ -621,247 +679,6 @@ namespace CaurixTemplateOperator
         /// start service to rerun under time
         ///
         ///
-
-        public class MailWrapper : IMailWrapper
-        {
-            private List<MimeMessage> MessagesList = new List<MimeMessage>();
-            private SmtpClient client;
-            private ImapClient imapClient;
-            private SmtpAccount workingAccount;
-
-
-            public MailWrapper()
-            {
-                SmtpAccountsJsonClass jsonObj =
-                     JsonConvert.DeserializeObject<SmtpAccountsJsonClass>(CaurixTemplate.Default.SmtpConnectionJson);
-                workingAccount =
-                    jsonObj.SmtpAccounts.Where((account => account.N == jsonObj.SelectedRecord)).First();
-
-                client = new SmtpClient(new ProtocolLogger("smtp.log"));
-                imapClient = new ImapClient(new ProtocolLogger("imap.log"));
-            }
-
-            public void ReloadWrapperSettings()
-            {
-                SmtpAccountsJsonClass jsonObj =
-                    JsonConvert.DeserializeObject<SmtpAccountsJsonClass>(CaurixTemplate.Default.SmtpConnectionJson);
-                workingAccount =
-                    jsonObj.SmtpAccounts.Where((account => account.N == jsonObj.SelectedRecord)).First();
-            }
-
-            public string SaveToPickupDirectory(MimeMessage message, string pickupDirectory)
-            {
-                do
-                {
-                    // Generate a random file name to save the message to.
-                    var path = Path.Combine(pickupDirectory, Guid.NewGuid().ToString() + ".eml");
-                    Stream stream;
-
-                    try
-                    {
-                        // Attempt to create the new file.
-                        stream = File.Open(path, FileMode.CreateNew);
-                    }
-                    catch (IOException)
-                    {
-                        // If the file already exists, try again with a new Guid.
-                        if (File.Exists(path))
-                            continue;
-
-                        // Otherwise, fail immediately since it probably means that there is
-                        // no graceful way to recover from this error.
-                        throw;
-                    }
-
-                    try
-                    {
-                        using (stream)
-                        {
-                            // IIS pickup directories expect the message to be "byte-stuffed"
-                            // which means that lines beginning with "." need to be escaped
-                            // by adding an extra "." to the beginning of the line.
-                            //
-                            // Use an SmtpDataFilter "byte-stuff" the message as it is written
-                            // to the file stream. This is the same process that an SmtpClient
-                            // would use when sending the message in a `DATA` command.
-                            using (var filtered = new FilteredStream(stream))
-                            {
-                                filtered.Add(new SmtpDataFilter());
-
-                                // Make sure to write the message in DOS (<CR><LF>) format.
-                                var options = FormatOptions.Default.Clone();
-                                options.NewLineFormat = NewLineFormat.Dos;
-
-                                message.WriteTo(options, filtered);
-                                filtered.Flush();
-                                return path;
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // An exception here probably means that the disk is full.
-                        //
-                        // Delete the file that was created above so that incomplete files are not
-                        // left behind for IIS to send accidentally.
-                        File.Delete(path);
-                        throw;
-                    }
-                } while (true);
-            }
-
-            public void SendMessage(MimeMessage message)
-            {
-                client.Connect(workingAccount.SmtpAddress, Int32.Parse(workingAccount.SmtpPort));
-                client.Authenticate(workingAccount.Email, workingAccount.PassWord);
-
-                client.Send(message);
-                client.Disconnect(true);
-            }
-
-            public MimeMessage CreateMessageWithAttachment(string path, string msidn)
-            {
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Caurix Operator", workingAccount.Email));
-                message.To.Add(new MailboxAddress("", string.IsNullOrEmpty(CaurixTemplate.Default.EmailReceiver) ? CaurixTemplate.Default.EmailSender : CaurixTemplate.Default.EmailReceiver));
-                message.Subject = "Filled agreement for " + msidn;
-
-                var body = new TextPart("plain")
-                {
-                    Text = "Dear Customer, \n\r \n\rWe are happy to work with you. \n\rPlease, see the prepared document attached."
-                };
-
-                var attachment = new MimePart("application", "pdf")
-                {
-                    Content = new MimeContent(File.OpenRead(path)),
-                    ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
-                    ContentTransferEncoding = ContentEncoding.Base64,
-                    FileName = Path.GetFileName(path)
-                };
-
-                var multipart = new Multipart("mixed");
-                multipart.Add(body);
-                multipart.Add(attachment);
-
-                message.Body = multipart;
-                return message;
-            }
-
-            /*public List<DeliveryStatusNotification?> CheckDeliveryStatusNotifications()
-            {
-                List<DeliveryStatusNotification?> dsnList = new List<DeliveryStatusNotification?>();
-                int cnt = 0;
-                foreach (var message in MessagesList)
-                {
-                     message.MessageId
-                }
-            }*/
-
-            public ImagePair FetchImagesByMsidn(string msidn, string directory)
-            {
-                List<MimeMessage> messages = new List<MimeMessage>();
-
-                imapClient.Connect(workingAccount.IPServerAddress, int.Parse(workingAccount.IPServerPort));
-                imapClient.Authenticate(workingAccount.Email, workingAccount.PassWord);
-                imapClient.Inbox.Open(FolderAccess.ReadOnly);
-
-                var query = SearchQuery.SubjectContains(msidn);
-                var uids = imapClient.Inbox.Search(query);
-                var items = imapClient.Inbox.Fetch(uids, MessageSummaryItems.UniqueId | MessageSummaryItems.BodyStructure);
-
-                bool SignFetched = false;
-                bool IdentFetched = false;
-                ImagePair imagePair = new ImagePair() { identImage = null, signImage = null };
-
-                foreach (var item in items)
-                {
-                    if (item.Attachments.Any())
-                    {
-                        foreach (var attachment in item.Attachments)
-                        {
-                            var entity = imapClient.Inbox.GetBodyPart(item.UniqueId, attachment);
-
-                            // attachments can be either message/rfc822 parts or regular MIME parts
-                            if (!(entity is MessagePart))
-                            {
-                                var part = (MimePart)entity;
-                                // note: it's possible for this to be null, but most will specify a filename
-                                var fileName = part.FileName;
-                                if ((fileName.Contains("sign") && !SignFetched) || (fileName.Contains("ident") && !IdentFetched))
-                                {
-                                    if (!fileName.Contains(msidn)) fileName = msidn + fileName;
-                                    var path = Path.Combine(directory, fileName);
-                                    // decode and save the content to a file
-                                    using (var stream = File.Create(path))
-                                        part.Content.DecodeTo(stream);
-
-                                    if (fileName.Contains("sign"))
-                                    {
-                                        SignFetched = true;
-                                        imagePair.signImage = Image.FromFile(path);
-                                        imagePair.signImagePath = path;
-                                    }
-                                    else
-                                    {
-                                        IdentFetched = true;
-                                        imagePair.identImage = Image.FromFile(path);
-                                        imagePair.identImagePath = path;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                imapClient.Disconnect(true);
-                return imagePair;
-            }
-
-            public void AddMessageToQueue(MimeMessage message)
-            {
-                MessagesList.Add(message);
-            }
-
-            public void SendAllMessages()
-            {
-                ReloadWrapperSettings();
-
-                BackgroundWorker backgroundWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
-                backgroundWorker.DoWork += delegate (object sender, DoWorkEventArgs args)
-                {
-                    try
-                    {
-                        client.Connect(workingAccount.SmtpAddress, int.Parse(workingAccount.SmtpPort));
-                        client.Authenticate(workingAccount.Email, workingAccount.PassWord);
-                        foreach (var m in MessagesList)
-                        {
-                            try
-                            {
-                                client.Send(m);
-                            }
-                            catch (Exception e)
-                            {
-                                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), e.Message);
-                            }
-                            Thread.Sleep((int)CaurixTemplate.Default.TimeToDeferEmail * 1000);
-                        }
-                        client.Disconnect(true);
-                        return;
-                    }
-                    catch (Exception e)
-                    {
-                        if (client.IsConnected) client.Disconnect(false);
-                        Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), e.Message);
-                        return;
-                    }
-                };
-                backgroundWorker.RunWorkerCompleted += delegate { Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": BW: Completed thread."); MessagesList.Clear(); };
-
-                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), "All mails are due to send");
-                backgroundWorker.RunWorkerAsync();
-
-            }
-        }
 
         public void EnumerateAccounts()
         {
@@ -932,20 +749,342 @@ namespace CaurixTemplateOperator
             }
         }
     }
-     
+
+    public class CustomSmtpClient : SmtpClient
+    {
+        public CustomSmtpClient() : base(new ProtocolLogger("smtp" + DateTime.Now.ToString("yyyy-MM-DD-hh-mm-ss") + ".log"))
+        {
+        }
+
+        public DeliveryStatusNotification? AccessStatusNotification(MimeMessage message, MailboxAddress mailbox)
+        {
+            return GetDeliveryStatusNotifications(message, mailbox);
+        }
+
+        protected override DeliveryStatusNotification? GetDeliveryStatusNotifications(MimeMessage message, MailboxAddress mailbox)
+        {
+            if (!(message.Body is MultipartReport report) || report.ReportType == null || !report.ReportType.Equals("delivery-status", StringComparison.OrdinalIgnoreCase))
+            {
+                return default(DeliveryStatusNotification?);
+            }
+
+            report.OfType<MessageDeliveryStatus>().ToList().ForEach(x =>
+            {
+                x.StatusGroups.Where(y => y.Contains("Action") && y.Contains("Final-Recipient")).ToList().ForEach(z =>
+                {
+                    switch (z["Action"])
+                    {
+                        case "failed":
+                            Console.WriteLine("Delivery of message {0} failed for {1}", z["Action"], z["Final-Recipient"]);
+                            break;
+
+                        case "delayed":
+                            Console.WriteLine("Delivery of message {0} has been delayed for {1}", z["Action"], z["Final-Recipient"]);
+                            break;
+
+                        case "delivered":
+                            Console.WriteLine("Delivery of message {0} has been delivered to {1}", z["Action"], z["Final-Recipient"]);
+                            break;
+
+                        case "relayed":
+                            Console.WriteLine("Delivery of message {0} has been relayed for {1}", z["Action"], z["Final-Recipient"]);
+                            break;
+
+                        case "expanded":
+                            Console.WriteLine("Delivery of message {0} has been delivered to {1} and relayed to the the expanded recipients", z["Action"], z["Final-Recipient"]);
+                            break;
+                    }
+                });
+            });
+            return default(DeliveryStatusNotification?);
+        }
+    }
+
+    public class MailWrapper : IMailWrapper
+    {
+        private List<MimeMessage> MessagesList = new List<MimeMessage>();
+        private CustomSmtpClient client;
+        private ImapClient imapClient;
+        private SmtpAccount workingAccount;
+        public ProtocolLogger plSmpt = new ProtocolLogger("smtp.log");
+
+        public MailWrapper()
+        {
+            SmtpAccountsJsonClass jsonObj =
+                 JsonConvert.DeserializeObject<SmtpAccountsJsonClass>(CaurixTemplate.Default.SmtpConnectionJson);
+            try
+            {
+                workingAccount =
+                        jsonObj?.SmtpAccounts.Where((account => account.N == jsonObj.SelectedRecord)).First();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Email account is not set up. Starting settings window.");
+                using (var smtp = new SmtpSetup())
+                {
+                    var res = smtp.ShowDialog();
+                }
+            }
+
+            //client = new SmtpClient(new ProtocolLogger("smtp.log"));
+            client = new CustomSmtpClient();
+            imapClient = new ImapClient(new ProtocolLogger("imap.log"));
+        }
+
+        public void ReloadWrapperSettings()
+        {
+            SmtpAccountsJsonClass jsonObj =
+                JsonConvert.DeserializeObject<SmtpAccountsJsonClass>(CaurixTemplate.Default.SmtpConnectionJson);
+            workingAccount =
+                jsonObj.SmtpAccounts.Where((account => account.N == jsonObj.SelectedRecord)).First();
+        }
+
+        public string SaveToPickupDirectory(MimeMessage message, string pickupDirectory)
+        {
+            do
+            {
+                // Generate a random file name to save the message to.
+                var path = Path.Combine(pickupDirectory, Guid.NewGuid().ToString() + ".eml");
+                Stream stream;
+
+                try
+                {
+                    // Attempt to create the new file.
+                    stream = File.Open(path, FileMode.CreateNew);
+                }
+                catch (IOException)
+                {
+                    // If the file already exists, try again with a new Guid.
+                    if (File.Exists(path))
+                    {
+                        continue;
+                    }
+
+                    // Otherwise, fail immediately since it probably means that there is
+                    // no graceful way to recover from this error.
+                    throw;
+                }
+
+                try
+                {
+                    using (stream)
+                    {
+                        // IIS pickup directories expect the message to be "byte-stuffed"
+                        // which means that lines beginning with "." need to be escaped
+                        // by adding an extra "." to the beginning of the line.
+                        //
+                        // Use an SmtpDataFilter "byte-stuff" the message as it is written
+                        // to the file stream. This is the same process that an SmtpClient
+                        // would use when sending the message in a `DATA` command.
+                        using (var filtered = new FilteredStream(stream))
+                        {
+                            filtered.Add(new SmtpDataFilter());
+
+                            // Make sure to write the message in DOS (<CR><LF>) format.
+                            var options = FormatOptions.Default.Clone();
+                            options.NewLineFormat = NewLineFormat.Dos;
+
+                            message.WriteTo(options, filtered);
+                            filtered.Flush();
+                            return path;
+                        }
+                    }
+                }
+                catch
+                {
+                    // An exception here probably means that the disk is full.
+                    //
+                    // Delete the file that was created above so that incomplete files are not
+                    // left behind for IIS to send accidentally.
+                    File.Delete(path);
+                    throw;
+                }
+            } while (true);
+        }
+
+        public void SendMessage(MimeMessage message)
+        {
+            client.Connect(workingAccount.SmtpAddress, Int32.Parse(workingAccount.SmtpPort));
+            client.Authenticate(workingAccount.Email, workingAccount.PassWord);
+
+            client.Send(message);
+            client.Disconnect(true);
+        }
+
+        public MimeMessage CreateMessageWithAttachment(string path, string msidn)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Caurix Operator", workingAccount.Email));
+            message.To.Add(new MailboxAddress("", string.IsNullOrEmpty(CaurixTemplate.Default.EmailReceiver) ? CaurixTemplate.Default.EmailSender : CaurixTemplate.Default.EmailReceiver));
+            message.Subject = "Filled agreement for " + msidn;
+
+            var body = new TextPart("plain")
+            {
+                Text = "Dear Customer, \n\r \n\rWe are happy to work with you. \n\rPlease, see the prepared document attached."
+            };
+
+            var attachment = new MimePart("application", "pdf")
+            {
+                Content = new MimeContent(File.OpenRead(path)),
+                ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                ContentTransferEncoding = ContentEncoding.Base64,
+                FileName = Path.GetFileName(path)
+            };
+
+            var multipart = new Multipart("mixed");
+            multipart.Add(body);
+            multipart.Add(attachment);
+
+            message.Body = multipart;
+            return message;
+        }
+
+        /*public List<DeliveryStatusNotification?> CheckDeliveryStatusNotifications()
+        {
+            List<DeliveryStatusNotification?> dsnList = new List<DeliveryStatusNotification?>();
+            int cnt = 0;
+            foreach (var message in MessagesList)
+            {
+                 message.MessageId
+            }
+        }*/
+
+        public ImagePair FetchImagesByMsidn(string msidn, string directory)
+        {
+            List<MimeMessage> messages = new List<MimeMessage>();
+
+            imapClient.Connect(workingAccount.IPServerAddress, int.Parse(workingAccount.IPServerPort));
+            try
+            {
+                imapClient.Authenticate(workingAccount.Email, workingAccount.PassWord);
+            }
+            catch (MailKit.Security.AuthenticationException e)
+            {
+                Logger.Push(Thread.CurrentThread.Name,(e.ToString()));
+            }
+            
+            imapClient.Inbox.Open(FolderAccess.ReadOnly);
+
+            var query = SearchQuery.SubjectContains(msidn);
+            var uids = imapClient.Inbox.Search(query);
+            var items = imapClient.Inbox.Fetch(uids, MessageSummaryItems.UniqueId | MessageSummaryItems.BodyStructure);
+
+            bool SignFetched = false;
+            bool IdentFetched = false;
+            ImagePair imagePair = new ImagePair() { identImage = null, signImage = null };
+
+            foreach (var item in items)
+            {
+                if (item.Attachments.Any())
+                {
+                    foreach (var attachment in item.Attachments)
+                    {
+                        var entity = imapClient.Inbox.GetBodyPart(item.UniqueId, attachment);
+
+                        // attachments can be either message/rfc822 parts or regular MIME parts
+                        if (!(entity is MessagePart))
+                        {
+                            var part = (MimePart)entity;
+                            // note: it's possible for this to be null, but most will specify a filename
+                            var fileName = part.FileName;
+                            if ((fileName.Contains("sign") && !SignFetched) || (fileName.Contains("ident") && !IdentFetched))
+                            {
+                                if (!fileName.Contains(msidn))
+                                {
+                                    fileName = msidn + fileName;
+                                }
+
+                                var path = Path.Combine(directory, fileName);
+                                // decode and save the content to a file
+                                using (var stream = File.Create(path))
+                                {
+                                    part.Content.DecodeTo(stream);
+                                }
+
+                                if (fileName.Contains("sign"))
+                                {
+                                    SignFetched = true;
+                                    imagePair.signImage = Image.FromFile(path);
+                                    imagePair.signImagePath = path;
+                                }
+                                else
+                                {
+                                    IdentFetched = true;
+                                    imagePair.identImage = Image.FromFile(path);
+                                    imagePair.identImagePath = path;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            imapClient.Disconnect(true);
+            return imagePair;
+        }
+
+        public void AddMessageToQueue(MimeMessage message)
+        {
+            MessagesList.Add(message);
+        }
+
+        public void SendAllMessages()
+        {
+            ReloadWrapperSettings();
+
+            BackgroundWorker backgroundWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
+            backgroundWorker.DoWork += delegate (object sender, DoWorkEventArgs args)
+            {
+                try
+                {
+                    client.Connect(workingAccount.SmtpAddress, int.Parse(workingAccount.SmtpPort));
+                    client.Authenticate(workingAccount.Email, workingAccount.PassWord);
+                    foreach (var m in MessagesList)
+                    {
+                        try
+                        {
+                            client.Send(m);
+                            client.AccessStatusNotification(m, MailboxAddress.Parse(m.To.ToString()));
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), e.Message);
+                        }
+                        Thread.Sleep((int)CaurixTemplate.Default.TimeToDeferEmail * 1000);
+                    }
+                    client.Disconnect(true);
+                    return;
+                }
+                catch (Exception e)
+                {
+                    if (client.IsConnected)
+                    {
+                        client.Disconnect(false);
+                    }
+
+                    Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), e.Message);
+                    return;
+                }
+            };
+            backgroundWorker.RunWorkerCompleted += delegate { Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": BW: Completed thread."); MessagesList.Clear(); };
+
+            Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), "All mails are due to send");
+            backgroundWorker.RunWorkerAsync();
+        }
+    }
 
     public struct ImagePair
     {
-         public Image signImage;
-         public string signImagePath;
-         public Image identImage;
-         public string identImagePath;
+        public Image signImage;
+        public string signImagePath;
+        public Image identImage;
+        public string identImagePath;
     }
 
     [Serializable]
     public class DbOutput
     {
-        public Dictionary<string,string> EntryValues = new Dictionary<string, string>();
+        public Dictionary<string, string> EntryValues = new Dictionary<string, string>();
         /*public long Id{ get; set; }
         public string Source { get; set; }
         public string Gender { get; set; }
@@ -975,18 +1114,17 @@ namespace CaurixTemplateOperator
             };*/
             return EntryValues.Values.ToArray();
         }
-
     }
 
     [Serializable]
-    
     public class ReplaceDictionaryElement
     {
         public string key { get; set; }
         public string value { get; set; }
     }
 
-    public class ReplaceDictionaryArray {
+    public class ReplaceDictionaryArray
+    {
         public List<ReplaceDictionaryElement> elem { get; set; }
 
         public ReplaceDictionaryArray()
@@ -1014,11 +1152,15 @@ namespace CaurixTemplateOperator
 
     public static class Logger
     {
-        static AsyncLogWriter alw = new AsyncLogWriter();
-        
+        private static AsyncLogWriter alw = new AsyncLogWriter();
+
         public static void Push(string threadName, string message, string eventTime = "")
         {
-            if (eventTime == "") eventTime = "[" + DateTime.Now.ToString("O") + "]";
+            if (eventTime == "")
+            {
+                eventTime = "[" + DateTime.Now.ToString("O") + "]";
+            }
+
             var combinedString = eventTime + ": " + threadName + ": " + message;
             alw.AddMessage(combinedString);
             Program.prime.PushMessageToForm(combinedString);
@@ -1037,19 +1179,24 @@ namespace CaurixTemplateOperator
         public AsyncLogWriter()
         {
             writerAsync.DoWork += WriterAsync_DoWork;
-            timerWorker.DoWork += delegate(object sender, DoWorkEventArgs args) {Thread.Sleep(1000);};
-            timerWorker.RunWorkerCompleted += delegate(object sender, RunWorkerCompletedEventArgs args) {
+            timerWorker.DoWork += delegate (object sender, DoWorkEventArgs args) { Thread.Sleep(1000); };
+            timerWorker.RunWorkerCompleted += delegate (object sender, RunWorkerCompletedEventArgs args)
+            {
                 if (pendingList.Count > 0)
                 {
-                    writerAsync.RunWorkerAsync(string.Join("\n\r", pendingList.Count>0 ? pendingList : new List<string>()));
+                    writerAsync.RunWorkerAsync(string.Join("\n\r", pendingList.Count > 0 ? pendingList : new List<string>()));
                     pendingList.Clear();
-                }};
+                }
+            };
         }
 
         public void AddMessage(string m)
         {
             pendingList.Add(m);
-            if (!timerWorker.IsBusy) timerWorker.RunWorkerAsync();
+            if (!timerWorker.IsBusy)
+            {
+                timerWorker.RunWorkerAsync();
+            }
         }
 
         private void WriterAsync_DoWork(object sender, DoWorkEventArgs e)
@@ -1064,4 +1211,3 @@ namespace CaurixTemplateOperator
         }
     }
 }
-

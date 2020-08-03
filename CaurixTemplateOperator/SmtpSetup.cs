@@ -115,8 +115,9 @@ namespace CaurixTemplateOperator
 
         public void UseBtn_Click(object sender, EventArgs e)
         {
-            selectionCode = int.Parse(dataGridView1[dataGridView1.CurrentCell.RowIndex,0].Value.ToString());
-            label1.Text = label1.Text.Replace(@"{None}", string.Format("*{0}*", selectionCode));
+            selectionCode = dataGridView1.CurrentCell.RowIndex;//int.Parse(dataGridView1[dataGridView1.CurrentCell.RowIndex,0].Value.ToString());
+            label1.Text = label1.Text.Replace(@"{None}", string.Format("*{0}*", selectionCode));  //TODO: fix regex to update properly
+            label1.Text += "Unsaved changes...";
         }
 
         public void button1_Click(object sender, EventArgs e)
@@ -141,6 +142,10 @@ namespace CaurixTemplateOperator
 
             CaurixTemplate.Default.SmtpConnectionJson = JsonConvert.SerializeObject(jsonObj);
             CaurixTemplate.Default.Save();
+
+            if (Program.prime != null) Program.prime.mailerWrapper.ReloadWrapperSettings();
+
+            label1.Text = string.Format("*{0}* selected", selectionCode);
             //Close();
         }
 

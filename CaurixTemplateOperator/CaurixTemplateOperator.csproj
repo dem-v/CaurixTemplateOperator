@@ -94,6 +94,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthFailed.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AuthFailed.Designer.cs">
+      <DependentUpon>AuthFailed.cs</DependentUpon>
+    </Compile>
     <Compile Include="CaurixTemplate.cs" />
     <Compile Include="CaurixTemplate.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -130,6 +136,9 @@
     <Compile Include="SmtpSetup.Designer.cs">
       <DependentUpon>SmtpSetup.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="AuthFailed.resx">
+      <DependentUpon>AuthFailed.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

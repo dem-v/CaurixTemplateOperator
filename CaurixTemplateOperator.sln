@@ -11,6 +11,8 @@ Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SetupProj", "SetupProj\Setu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "updOutlookRegValues", "updOutlookRegValues\updOutlookRegValues.csproj", "{1A80F8B6-C0F5-4EC0-AF06-258D5B4DEE00}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaurixTemplateOperator.Tests1", "CaurixTemplateOperator.Tests1\CaurixTemplateOperator.Tests1.csproj", "{961F2A26-14C4-42E8-80D7-9EF8FA086AB7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,12 @@ Global
 		{1A80F8B6-C0F5-4EC0-AF06-258D5B4DEE00}.Dep|Any CPU.Build.0 = Dep|Any CPU
 		{1A80F8B6-C0F5-4EC0-AF06-258D5B4DEE00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A80F8B6-C0F5-4EC0-AF06-258D5B4DEE00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{961F2A26-14C4-42E8-80D7-9EF8FA086AB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{961F2A26-14C4-42E8-80D7-9EF8FA086AB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{961F2A26-14C4-42E8-80D7-9EF8FA086AB7}.Dep|Any CPU.ActiveCfg = Debug|Any CPU
+		{961F2A26-14C4-42E8-80D7-9EF8FA086AB7}.Dep|Any CPU.Build.0 = Debug|Any CPU
+		{961F2A26-14C4-42E8-80D7-9EF8FA086AB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{961F2A26-14C4-42E8-80D7-9EF8FA086AB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

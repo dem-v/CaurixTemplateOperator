@@ -27,6 +27,9 @@ namespace CaurixTemplateOperator
         {
             InitializeComponent();
 
+            Program.PathSaveTo = CaurixTemplate.Default.PathSaveTo;
+            PrimaryInit(this);
+
             CaurixTemplate.Default.TemplatePath = Application.StartupPath + "\\Template.docx";
             Logger.Push("test",CaurixTemplate.Default.TemplatePath);
 
@@ -188,6 +191,7 @@ namespace CaurixTemplateOperator
                 ttt = folderBrowserDialog1.SelectedPath;
                 CaurixTemplate.Default.PathSaveTo = ttt + "\\";
                 CaurixTemplate.Default.Save();
+                Program.PathSaveTo = CaurixTemplate.Default.PathSaveTo;
                 Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": got SaveTo path...");
             }
             Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": Call completed");
