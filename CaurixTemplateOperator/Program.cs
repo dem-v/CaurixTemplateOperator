@@ -943,11 +943,16 @@ namespace CaurixTemplateOperator
             client.Disconnect(true);
         }
 
-        public MimeMessage CreateMessageWithAttachment(string path, string msidn)
+        public MimeMessage CreateMessageWithAttachment(string path, string msidn, string emailTo="")
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("Caurix Operator", workingAccount.Email));
-            message.To.Add(new MailboxAddress("", string.IsNullOrEmpty(CaurixTemplate.Default.EmailReceiver) ? CaurixTemplate.Default.EmailSender : CaurixTemplate.Default.EmailReceiver));
+            message.To.Add(new MailboxAddress("", 
+                string.IsNullOrEmpty(emailTo) ? (
+                string.IsNullOrEmpty(CaurixTemplate.Default.EmailReceiver)
+                    ? CaurixTemplate.Default.EmailSender
+                    : CaurixTemplate.Default.EmailReceiver) 
+                : emailTo));
             message.Subject = "Filled agreement for " + msidn;
 
             var body = new TextPart("plain")

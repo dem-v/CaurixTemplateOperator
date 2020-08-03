@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MailKit;
@@ -116,7 +117,8 @@ namespace CaurixTemplateOperator
         public void UseBtn_Click(object sender, EventArgs e)
         {
             selectionCode = dataGridView1.CurrentCell.RowIndex;//int.Parse(dataGridView1[dataGridView1.CurrentCell.RowIndex,0].Value.ToString());
-            label1.Text = label1.Text.Replace(@"{None}", string.Format("*{0}*", selectionCode));  //TODO: fix regex to update properly
+            label1.Text = Regex.Replace(label1.Text, @"(\*{*)(\d+|\w+)(}*\*)", "$1" + selectionCode + "$3"); //TODO: Test!!!!
+            //label1.Text = label1.Text.Replace(@"{None}", string.Format("*{0}*", selectionCode));  //TODO: fix regex to update properly
             label1.Text += "Unsaved changes...";
         }
 
