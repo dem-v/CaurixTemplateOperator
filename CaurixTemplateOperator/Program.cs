@@ -39,7 +39,7 @@ namespace CaurixTemplateOperator
         internal static OdbcCommand Command = new OdbcCommand();
         internal static OdbcDataAdapter Adapter = new OdbcDataAdapter();
         internal static OdbcDataReader data;
-        internal static string SQL = "select * from subscriber LIMIT 0, 30";
+        internal static string SQL = "select * from subscriber where isProcessed <> 7 LIMIT 0, 30";
         public static List<DbOutput> DbList = new List<DbOutput>();
         internal static object WordTemplatePath = CaurixTemplate.Default.TemplatePath;
         internal static string PathSaveTo = CaurixTemplate.Default.PathSaveTo;
@@ -197,6 +197,36 @@ namespace CaurixTemplateOperator
                 }
             }*/
             ExportFiles();
+        }
+
+        public void PushProcessedFlagToDb(long recordId)
+        {
+            if (OdbcConn == null)
+            {
+                Logger.Push("MainProgr,DBConn", "Connection is lost, can't push data");
+                return;
+            }
+
+            try
+            {
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Connection opened successfully");
+                Command.CommandText = "UPDATE subscriber SET isProcessed = 7 WHERE id = " + recordId.ToString("D");
+                OdbcConn.Open();
+                Command.Connection = OdbcConn;
+                Command.ExecuteNonQuery();
+                OdbcConn.Close();
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Data updated successfully!");
+            }
+            catch (Exception ex)
+            {
+                Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": MAIN: Error with database: " + ex.Source + " " + ex.Message);
+                MessageBox.Show(ex.Message);
+                if (OdbcConn.State != ConnectionState.Closed)
+                {
+                    OdbcConn.Close();
+                }
+            }
+
         }
 
         public string LoadImageFromEmail(string number, string nameKey)  //TOD: Add adapter to fetch image from email using MailKit
@@ -380,6 +410,7 @@ namespace CaurixTemplateOperator
                         Logger.Push(Thread.CurrentThread.ManagedThreadId.ToString(), ": ERROR!!!! MSIDN is non existent!");
                     }
 
+                    //TODO:Check if this is not redundant
                     var check = CheckIfToSkip(MSIDNValue);
                     if (check)
                     {
@@ -465,6 +496,7 @@ namespace CaurixTemplateOperator
                 {
                     //DoMail(finalpath + ".pdf", MSIDNValue);
                     mailerWrapper.AddMessageToQueue(mailerWrapper.CreateMessageWithAttachment(finalpath, MSIDNValue));
+                    PushProcessedFlagToDb(long.Parse(itemDbOutput.EntryValues["id"]));
                 }
                 catch (Exception e)
                 {
